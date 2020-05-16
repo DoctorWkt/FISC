@@ -39,4 +39,4 @@ well. I've settled on the hardware design and done the schematic and
 a rough PCB layout. Now I need to check for mistake and clean up the
 PCB layout. I'd also like to port my `clc` compiler to this CPU.
 
-For more detail on progress, you can read my [Docs/journal.md](journal).
+For more detail on progress, you can read my [journal](Docs/journal.md).
