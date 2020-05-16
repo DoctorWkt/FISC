@@ -1,0 +1,359 @@
+# Microcode for the FISC CPU. (c) 2020 Warren Toomey, GPL3
+# [as at Sat 16 May 2020]
+#
+# First up, we have the definitions of the control line combinations.
+# A leading @ on a line means that this control line is active low.
+
+# ALU operations (4 bits, 3:0).
+A+B        = 0000	# uses carry-in
+A-B        = 0001	# uses carry-in
+A&B        = 0002
+A|B        = 0003
+A^B        = 0004
+A<<B       = 0005
+A>>BL      = 0006
+A*B        = 0007	# low 8-bit result
+A/B        = 0008
+A%B        = 0009
+A+0	   = 000A	# uses carry-in
+A-Bcomp    = 000B	# no carry-in
+Zero       = 000C
+A+1        = 000D
+A-1        = 000E
+~A         = 000F
+
+# Data bus writers (3 bits, 6:4)
+MEMwrite  = 0000
+ADhiwrite = 0010
+ADlowrite = 0020
+UARTwrite = 0030
+Awrite    = 0040
+Owrite    = 0050
+#           0060 and up not used
+
+# Address bus writers (2 bits, 8:7)
+PCwrite = 0000
+ARwrite = 0080
+SPwrite = 0100
+#         0180 not used
+
+# Data bus readers (4 bits, 12:9)
+#	    0000 means no data bus reader
+#	    Several values are unused
+Jmpena    = 0400
+ARhiread  = 0600
+ARloread  = 0800
+SPhiread  = 0A00
+SPloread  = 0C00
+Aread     = 0E00
+Bread     = 1000
+IRread    = 1200
+MEMread   = 1400
+Carryread = 1600
+UARTread  = 1800
+
+# Stack operation (2 bits, 14:13)
+Stkincr  = 0000
+Stkdecr  = 2000
+Stkhold  = 4000
+PCincr   = 6000 	# is also a Stkhold operation
+
+# Single control bits (15)
+@uSreset   = 8000
+
+# This line, if given, is placed at position zero for each microinstruction.
+# The purpose is to load the IR with the instruction and increment the PC.
+#
+START := MEMwrite IRread PCincr
+
+# 00-0F instructions: special purpose
+
+# No operation
+00 nop: uSreset Stkhold
+
+# Load A with constant $XX
+02 mov_a_byte: MEMwrite Aread PCincr
+	uSreset Stkhold
+
+# Load B with constant $XX
+03 mov_b_byte: MEMwrite Bread PCincr
+	uSreset Stkhold
+
+# Store A to memory
+04 mov_word_a: MEMwrite ARloread PCincr
+	MEMwrite ARhiread PCincr
+	ARwrite Awrite MEMread Stkhold
+        uSreset Stkhold
+
+# 05 was mov_word_b, can we do it through the ALU?
+
+# Load A from memory
+06 mov_a_word: MEMwrite ARloread PCincr
+	MEMwrite ARhiread PCincr
+	ARwrite MEMwrite Aread Stkhold
+        uSreset Stkhold
+
+# Load B from memory
+07 mov_b_word: MEMwrite ARloread PCincr
+	MEMwrite ARhiread PCincr
+	ARwrite MEMwrite Bread Stkhold
+        uSreset Stkhold
+
+# Write A to the UART
+08 out_a: Awrite UARTread Stkhold
+         uSreset Stkhold
+
+# 09 was Write B to the UART. Can we do it through the ALU?
+
+# Read A from the UART
+0A in_a: UARTwrite Aread Stkhold
+         uSreset Stkhold
+
+# Read A from the UART
+0B in_b: UARTwrite Bread Stkhold
+         uSreset Stkhold
+
+# Push A to the stack.
+0C push_a: Stkdecr
+	SPwrite Awrite MEMread Stkhold
+        uSreset Stkhold
+
+# 0D was Push B to the stack. Can we do it through the ALU?
+
+# Pop A from the stack.
+0E pop_a: SPwrite MEMwrite Aread Stkhold
+	Stkincr
+        uSreset Stkhold
+
+# Pop B from the stack.
+0F pop_b: SPwrite MEMwrite Bread Stkhold
+	Stkincr
+        uSreset Stkhold
+
+# 10-17: Jump instructions
+
+# Jump if A equals B
+10 jeq_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if A less than B
+11 jlt_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if A is not equal to B
+12 jne_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if A is less than or equal to B
+13 jle_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if A is greater than or equal to B
+14 jge_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if A is greater than B
+15 jgt_a_b_word: MEMwrite ARloread PCincr
+           MEMwrite ARhiread PCincr
+	   Awrite A-Bcomp ARwrite Jmpena Stkhold
+           uSreset Stkhold
+
+# Jump if UART not ready to transmit
+16 jnt_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite Jmpena Stkhold
+        uSreset Stkhold
+
+# Jump if no UART data ready to read
+17 jnr_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite Jmpena Stkhold
+        uSreset Stkhold
+
+# Clear the carry bit
+18 clc: Zero Carryread Stkhold
+        uSreset Stkhold
+
+# 20-2F instructions: A= A op B
+# We only do Carryread when there is
+# a potential carry
+
+20 add_a_b: Awrite A+B Carryread Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+21 sub_a_b: Awrite A-B Carryread Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+22 and_a_b: Awrite A&B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+23 or_a_b:  Awrite A|B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+24 xor_a_b: Awrite A^B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+25 lsl_a_b: Awrite A<<B Carryread Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+26 lsr_a_b: Awrite A>>BL Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+27 mul_a_b: Awrite A*B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+28 div_a_b: Awrite A/B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+29 mod_a_b: Awrite A%B Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+# Increment A if carry is set
+2A cinc_a: Awrite A+0 Carryread Stkhold
+	   Owrite Aread Stkhold
+	   uSreset Stkhold
+
+# Clear A register
+2C clr_a: Zero Stkhold
+	  Owrite Aread Stkhold
+	  uSreset Stkhold
+
+# Increment A register
+2D inc_a: Awrite A+1 Carryread Stkhold
+	  Owrite Aread Stkhold
+	  uSreset Stkhold
+
+# Decrement A register
+2E dec_a: Awrite A-1 Carryread Stkhold
+	  Owrite Aread Stkhold
+	  uSreset Stkhold
+
+# Negate A register
+2F neg_a: Awrite ~A Stkhold
+	  Owrite Aread Stkhold
+	  uSreset Stkhold
+
+# 30-3F instructions: Mem= Mem op B
+
+# 40-4F instructions: special purpose
+
+# Jump to subroutine starting at given address.
+# Push the return address on the stack.
+# A gets destroyed. Must be X0 as jump if zero.
+40 jsr_word: MEMwrite ARloread PCincr			# Get the jump address in AR
+	MEMwrite ARhiread PCincr
+	Stkdecr
+	PCwrite ADhiwrite Aread Stkhold			# Load PChi into A
+	SPwrite Awrite MEMread Stkhold			# Save it on the stack
+	Stkdecr
+	PCwrite ADlowrite Aread Stkhold			# Load PClo into A
+	SPwrite Awrite MEMread Stkhold			# Save it on the stack
+	Zero ARwrite Jmpena Stkhold			# Copy AR to PC
+        uSreset Stkhold
+
+# Load A from memory with B offset
+42 mov_a_word+b: MEMwrite ARloread PCincr		# Get the address into AR
+	   MEMwrite ARhiread PCincr
+	   Zero Carryread Stkhold			# Clear the carry
+	   ARwrite ADlowrite A+B Carryread Stkhold 	# ARlo+B => Oreg
+	   Owrite ARloread Stkhold			# and stored into ARlo
+	   ARwrite ADhiwrite A+0 Carryread Stkhold 	# ARhi+carry => Oreg
+	   Owrite ARhiread Stkhold			# and stored into ARhi
+	   ARwrite MEMwrite Aread Stkhold		# A = $ADDR,B
+           uSreset Stkhold
+
+# Store A to memory with B offset
+43 mov_word+b_a: MEMwrite ARloread PCincr		# Get the address into AR
+	   MEMwrite ARhiread PCincr
+	   Zero Carryread Stkhold 			# Clear the carry
+	   ARwrite ADlowrite A+B Carryread Stkhold	# ARlo+B => Oreg
+	   Owrite ARloread Stkhold			# and stored into ARlo
+	   ARwrite ADhiwrite A+0 Carryread Stkhold	# ARhi+carry => Oreg
+	   Owrite ARhiread Stkhold			# and stored into ARhi
+	   ARwrite Awrite MEMread Stkhold		# $ADDR,B = A
+           uSreset Stkhold
+
+# Copy A to B
+44 mov_b_a: Awrite Bread Stkhold
+          uSreset Stkhold
+
+# Copy B to A. Can we do it through the ALU?
+
+# Load A from stack pointer with 16-bit offset.
+# B is destroyed
+45 mov_a_sp+word: Zero Carryread Stkhold		# Clear the carry
+	     MEMwrite Bread PCincr			# Get the low offset in B
+	     SPwrite ADlowrite A+B Carryread Stkhold	# SPlo+B => Oreg
+	     Owrite ARloread Stkhold			# and stored into ARlo
+	     MEMwrite Bread PCincr			# Get the high offset in B
+	     SPwrite ADhiwrite A+B Carryread Stkhold	# SPhi+carry => Oreg
+	     Owrite ARhiread Stkhold			# and stored into ARhi
+	     ARwrite MEMwrite Aread Stkhold		# A = $ADDR,B
+             uSreset Stkhold
+
+# Set the stack pointer to an address
+46 mov_sp_word: MEMwrite SPloread PCincr
+        MEMwrite SPhiread PCincr
+        uSreset Stkhold
+
+# Write A through the stack pointer with 16-bit offset.
+# B is destroyed
+47 mov_sp+word_a: Zero Carryread Stkhold		# Clear the carry
+	     MEMwrite Bread PCincr			# Get the low offset in B
+	     SPwrite ADlowrite A+B Carryread Stkhold    # SPlo+B => Oreg
+             Owrite ARloread Stkhold                    # and stored into ARlo
+	     MEMwrite Bread PCincr			# Get the high offset in B
+             SPwrite ADhiwrite A+B Carryread Stkhold    # SPhi+carry => Oreg
+             Owrite ARhiread Stkhold                    # and stored into ARhi
+	     ARwrite Awrite MEMread Stkhold		# $ADDR,B = A
+             uSreset Stkhold
+
+# Load A from stack pointer with constant offset
+# B is destroyed
+48 mov_a_sp+byte: MEMwrite Bread PCincr
+	  Zero Carryread Stkhold			# Clear the carry
+	  SPwrite ADlowrite A+B Carryread Stkhold	# SPlo+B => Oreg
+	  Owrite ARloread Stkhold			# and stored into ARlo
+	  SPwrite ADhiwrite A+0 Carryread Stkhold	# SPhi+carry => Oreg
+	  Owrite ARhiread Stkhold			# and stored into ARhi
+	  ARwrite MEMwrite Aread Stkhold		# A = $ADDR,B
+          uSreset Stkhold
+
+# Return from a subroutine to the address
+# previously stored on the stack.
+# Must be X0 as jump if zero.
+50 rts: SPwrite MEMwrite ARloread Stkhold		# Get low byte of address
+        Stkincr
+	SPwrite MEMwrite ARhiread Stkhold		# Get high byte of address
+        Stkincr
+	Zero ARwrite Jmpena Stkhold			# Copy AR to PC
+        uSreset Stkhold
+
+# Absolute jump. Has to be at X0 so that
+# we do a jump if zero
+# Always jump to $XXXX
+60 jmp_word: MEMwrite ARloread PCincr
+	MEMwrite ARhiread PCincr
+	Zero ARwrite Jmpena Stkhold
+        uSreset Stkhold
+
