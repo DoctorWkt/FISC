@@ -38,7 +38,7 @@ the final version. I still have to do a lot of checking on the design.
 
 **mid-May, 2020**: Both the Perl simulator and the Verilog model work
 well. I've settled on the hardware design and done the schematic and
-a rough PCB layout. Now I need to check for mistake and clean up the
+a rough PCB layout. Now I need to check for mistakes and clean up the
 PCB layout. I'd also like to port my `clc` compiler to this CPU.
 
 For more detail on progress, you can read my [journal](Docs/journal.md).
