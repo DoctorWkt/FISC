@@ -41,7 +41,7 @@
       (place U7 50800 -25654 front 0 (PN 74HCT574))
       (place U11 33909 -25654 front 0 (PN 74HCT574))
       (place U13 149479 -78105 front 180 (PN 74HCT574))
-      (place U14 137541 -25908 front 0 (PN 74HCT574))
+      (place U14 136779 -31496 front 0 (PN 74HCT574))
       (place U15 80645 -102870 front 0 (PN 74HCT541))
     )
     (component "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm::1"
@@ -54,7 +54,7 @@
       (place U9 70231 -93218 front 180 (PN CY628128E))
     )
     (component "Package_DIP:DIP-28_W15.24mm"
-      (place U10 104775 -89789 front 180 (PN AT28C64B))
+      (place U10 101727 -90043 front 180 (PN AT28C64B))
     )
     (component "Package_SO:SOIC-16W_5.3x10.2mm_P1.27mm"
       (place U18 225679 -25527 front 0 (PN 74HCT161))
@@ -89,27 +89,27 @@
       (place U1 33274 -83185 front 0 (PN 74LS593))
     )
     (component "Package_DIP:DIP-20_W7.62mm_Socket::1"
-      (place U2 33147 -53848 front 0 (PN 74LS593))
+      (place U2 33655 -47752 front 0 (PN 74LS593))
     )
     (component "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm::2"
       (place U4 123190 -77851 front 0 (PN 74HCT240))
     )
     (component "Oscillator:Oscillator_DIP-14"
-      (place U26 211582 -80518 front 180 (PN "ECS-100AX-035"))
+      (place U26 195199 -90424 front 0 (PN "ECS-100AX-035"))
     )
     (component "Button_Switch_THT:Push_E-Switch_KS01Q01"
-      (place SW1 230632 -66802 front 180 (PN SW_Push))
+      (place SW1 233934 -66294 front 180 (PN SW_Push))
     )
     (component Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder
       (place C1 45720 -83185 front 0 (PN 0.1uF))
-      (place C2 46101 -53848 front 0 (PN 0.1uF))
-      (place C3 70612 -38100 front 0 (PN 0.1uF))
+      (place C2 46609 -47752 front 0 (PN 0.1uF))
+      (place C3 63373 -37846 front 0 (PN 0.1uF))
       (place C6 109855 -20701 front 0 (PN 0.1uF))
       (place C8 77343 -20066 front 0 (PN 0.1uF))
       (place C9 50927 -93218 front 0 (PN 0.1uF))
       (place C12 127762 -20066 front 0 (PN 0.1uF))
       (place C13 140462 -83820 front 180 (PN 0.1uF))
-      (place C14 146304 -20193 front 0 (PN 0.1uF))
+      (place C14 145542 -25781 front 0 (PN 0.1uF))
       (place C19 233045 -40259 front 0 (PN 0.1uF))
       (place C20 182245 -72898 front 0 (PN 0.1uF))
       (place C21 176530 -95123 front 0 (PN 0.1uF))
@@ -119,10 +119,10 @@
       (place C4 131572 -73025 front 270 (PN 0.1uF))
       (place C5 93472 -20701 front 0 (PN 0.1uF))
       (place C7 59436 -19939 front 0 (PN 0.1uF))
-      (place C10 84836 -89789 front 180 (PN 0.1uF))
+      (place C10 81788 -90043 front 180 (PN 0.1uF))
       (place C11 42418 -19939 front 0 (PN 0.1uF))
       (place C15 89535 -97155 front 0 (PN 0.1uF))
-      (place C16 114971 -97282 front 0 (PN 0.1uF))
+      (place C16 116727 -97282 front 0 (PN 0.1uF))
       (place C17 164973 -20193 front 0 (PN 0.1uF))
       (place C18 233299 -21082 front 0 (PN 0.1uF))
       (place C22 147828 -93853 front 0 (PN 0.1uF))
@@ -134,7 +134,7 @@
       (place IC1 225679 -82296 front 270 (PN "DS1233-10+"))
     )
     (component "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
-      (place U3 63627 -42545 front 0 (PN 74HCT138))
+      (place U3 56388 -42291 front 0 (PN 74HCT138))
     )
     (component "Package_DIP:DIP-24_W15.24mm_Socket"
       (place U24 193675 -61341 front 180 (PN UM245R))
