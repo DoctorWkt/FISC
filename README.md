@@ -12,6 +12,8 @@ branches and jumps.
 
 The design uses 25 chips and has 8K of ROM, 56K of RAM and a UART.
 
+![](Docs/Figs/pcb.jpg)
+
 ## Documentation
 
 The overall design of the CPU is covered in

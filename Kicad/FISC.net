@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source /home/wkt/ownCloud/FISC/Kicad/FISC.sch)
-    (date "Fri 15 May 2020 17:54:32 AEST")
+    (date "Sun 17 May 2020 09:36:59 AEST")
     (tool "Eeschema 5.1.5+dfsg1-2~bpo10+1")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -115,7 +115,7 @@
       (tstamp 5E1BEA6F))
     (comp (ref U3)
       (value 74HCT138)
-      (footprint Package_SO:SOIC-16_4.55x10.3mm_P1.27mm)
+      (footprint Package_SO:SOIC-16_3.9x9.9mm_P1.27mm)
       (datasheet http://www.ti.com/lit/gpn/sn74LS138)
       (fields
         (field (name Description) "Address Decode"))
@@ -507,7 +507,7 @@
       (tstamp 5E1C01D4))
     (comp (ref U24)
       (value UM245R)
-      (footprint Package_DIP:DIP-24_W10.16mm)
+      (footprint Package_DIP:DIP-24_W15.24mm_Socket)
       (datasheet http://www.ftdichip.com/Support/Documents/DataSheets/Modules/DS_UM245R.pdf)
       (fields
         (field (name "Allied Price/Stock") http://www.alliedelec.com/ftdi-um245r/70069413/)

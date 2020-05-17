@@ -979,6 +979,10 @@ Entry Wire Line
 	2650 4300 2750 4200
 Entry Wire Line
 	2650 4400 2750 4300
+Text Notes 7100 7000 0    50   ~ 0
+The uSeq counter along with the IR's value look up a microinstruction in the\nDecode ROM. These 16 bits are then decoded by the various demuxes\nto produce the actual control lines. The Jump Logic takes the status output\nfrom the ALU plus some of the IT bits to determine\nif the PC's value should be loaded (i.e. to jump the PC's value).
+Text Notes 7000 5200 0    50   ~ 0
+The '240 is simply eight inverters to get the active level\nright for seven control lines. One other inverter creates the\ninverted clock signal.
 Wire Wire Line
 	2350 4400 2850 4400
 Wire Wire Line
@@ -993,8 +997,4 @@ Wire Bus Line
 	1050 750  1050 2400
 Wire Bus Line
 	2950 1900 2950 4400
-Text Notes 7100 7000 0    50   ~ 0
-The uSeq counter along with the IR's value look up a microinstruction in the\nDecode ROM. These 16 bits are then decoded by the various demuxes\nto produce the actual control lines. The Jump Logic takes the status output\nfrom the ALU plus some of the IT bits to determine\nif the PC's value should be loaded (i.e. to jump the PC's value).
-Text Notes 7000 5200 0    50   ~ 0
-The '240 is simply eight inverters to get the active level\nright for seven control lines. One other inverter creates the\ninverted clock signal.
 $EndSCHEMATC

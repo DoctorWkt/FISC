@@ -86,7 +86,7 @@ U 1 1 5E1C109C
 P 8800 1350
 F 0 "U24" H 9400 1615 50  0000 C CNN
 F 1 "UM245R" H 9400 1524 50  0000 C CNN
-F 2 "Package_DIP:DIP-24_W10.16mm" H 10900 1050 50  0001 L CNN
+F 2 "Package_DIP:DIP-24_W15.24mm_Socket" H 10900 1050 50  0001 L CNN
 F 3 "http://www.ftdichip.com/Support/Documents/DataSheets/Modules/DS_UM245R.pdf" H 10900 950 50  0001 L CNN
 F 4 "UART" H 10900 850 50  0001 L CNN "Description"
 F 5 "10.5" H 10900 750 50  0001 L CNN "Height"
@@ -1250,6 +1250,8 @@ Text Notes 10150 650  0    50   ~ 0
 Data Bus
 Text Notes 1150 6300 0    50   ~ 0
 Address Bus
+Text Notes 7250 7000 0    50   ~ 0
+The ALU reads from the data bus and the B register. The ALU's output\nis stored in the O register so it can be put back on the data bus.\nBoth the A register and the UART read/write the data bus.\nThe AD buffers allow the hi/low bytes of the address bus to be written to the data bus.
 Wire Bus Line
 	3200 700  3200 2250
 Wire Bus Line
@@ -1264,6 +1266,4 @@ Wire Bus Line
 	6500 3400 6500 6350
 Wire Bus Line
 	8300 700  8300 5700
-Text Notes 7250 7000 0    50   ~ 0
-The ALU reads from the data bus and the B register. The ALU's output\nis stored in the O register so it can be put back on the data bus.\nBoth the A register and the UART read/write the data bus.\nThe AD buffers allow the hi/low bytes of the address bus to be written to the data bus.
 $EndSCHEMATC
