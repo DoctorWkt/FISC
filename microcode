@@ -11,7 +11,7 @@ A&B        = 0002
 A|B        = 0003
 A^B        = 0004
 A<<B       = 0005
-A>>BL      = 0006
+A>>B       = 0006
 A*B        = 0007	# low 8-bit result
 A/B        = 0008
 A%B        = 0009
@@ -212,7 +212,7 @@ START := MEMwrite IRread PCincr
 	   Owrite Aread Stkhold
 	   uSreset Stkhold
 
-26 lsr_a_b: Awrite A>>BL Stkhold
+26 asr_a_b: Awrite A>>B Stkhold
 	   Owrite Aread Stkhold
 	   uSreset Stkhold
 

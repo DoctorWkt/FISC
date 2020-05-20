@@ -41,6 +41,17 @@ our ( $A, $B, $carryin, $result );    # A and B inputs, carry-in and ALU result
 # The ROM contents to be generated
 my @ROM;
 
+# Arithmetic shift $A to the right $B times. Slow but works.
+sub ASR {
+  $result= $A;
+  my $msb= $result & 0x80;
+  for (my $i=0; $i < $B; $i++) {
+    $result= $result >> 1;
+    $result |= $msb;
+    last if ($i==8);
+  }
+}
+
 # Array of subroutines, some anonymous, which calculate the result
 # given the A and B values
 my @Opsub = (
@@ -50,7 +61,7 @@ my @Opsub = (
     sub { $result = $A | $B; },                             # A OR B
     sub { $result = $A ^ $B; },                             # A XOR B
     sub { $result = ( $A << $B ) & CMASK; },                # A<<B
-    sub { $result = $A >> $B; },                            # A>>B logical
+    \&ASR,						    # A>>B arithmetic
     sub { $result = ( $A * $B ) & NOCMASK; },               # A*B, low bits
     sub { $result = ( $B == 0 ) ? 0 : int( $A / $B ); },    # A/B
     sub { $result = ( $B == 0 ) ? 0 : int( $A % $B ); },    # A%B

@@ -217,8 +217,8 @@ won't jump unless the Decode Logic tells us to.
 ### The Decode Logic
 
 The Decode Logic outputs sixteen control bits. Some of these are demultiplexed
-to provide many more control bits. We have already seen that the ALU operation
-and the Jump operation are provided directly by the instruction.
+to provide many more control bits. 
+The Jump operation is provided directly by the low three bits of the instruction.
 
 At present, these are the control bits provided by the Decode Logic:
 

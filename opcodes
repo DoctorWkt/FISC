@@ -25,7 +25,7 @@
 23 1 or_a_b
 24 1 xor_a_b
 25 1 lsl_a_b
-26 1 lsr_a_b
+26 1 asr_a_b
 27 1 mul_a_b
 28 1 div_a_b
 29 1 mod_a_b

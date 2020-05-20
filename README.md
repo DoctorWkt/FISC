@@ -27,7 +27,8 @@ At present, I have:
 
  + a Perl CPU simulator, [csim](csim)
  + an assembler, [cas](cas)
- + example assembly programs in [Examples](Examples)
+ + a simple compiler, [clc](clc)
+ + example assembly and higher-level programs in [Examples](Examples)
  + a Verilog design in [Verilog](Verilog)
  + an initial schematic in [Kicad/schematic.pdf](Kicad/schematic.pdf)
 
@@ -39,6 +40,6 @@ the final version. I still have to do a lot of checking on the design.
 **mid-May, 2020**: Both the Perl simulator and the Verilog model work
 well. I've settled on the hardware design and done the schematic and
 a rough PCB layout. Now I need to check for mistakes and clean up the
-PCB layout. I'd also like to port my `clc` compiler to this CPU.
+PCB layout.
 
 For more detail on progress, you can read my [journal](Docs/journal.md).

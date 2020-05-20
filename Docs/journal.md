@@ -865,8 +865,8 @@ I set up the Github repository and made a few typo changes. I've got the 3D mode
 for the UM245R back in, and I've spaced out a few things on the PCB. The vias are back
 up over 200, though. I've imported
 the `clc` compiler from the CSCvon8 repository and changed it. It's compiling these
-programs OK: `legetests.c`, `signedprint.cl` and `triangle.cl`. But `himinsky.cl`
-and `hiprhex.cl` don't work yet although they compile and assemble. I've only spent
+programs OK: `legetests.c`, `hiprhex.cl` and `triangle.cl`. But `himinsky.cl`
+and `signedprint.cl` don't work yet although they compile and assemble. I've only spent
 an hour doing this so there is room for improvement! I did have to add the `equ`
 pseudo-op to the assembler.
 
@@ -961,3 +961,30 @@ retargettable. But I think I'd still like to do my own. I'm getting
 to the point where I think I should write a proper assembly grammar.
 But I want soemthing where I can generate the Perl code and distribute
 that, so other people won't have to install a yacc/lex equivalent.
+
+## Wed 20 May 15:13:03 AEST 2020
+
+I fixed one bug in `clc`, so `Examples/signedprint.cl` now works.
+But `Examples/himinsky.cl` isn't working yet. I was able to use the
+debug output from CSCvon8's `csim` and compare it to the `csim`
+output here.
+
+Ahah. In CSCvon8 we have both logical and arithmetic shift right ALU
+operations. We use one for the `prhex()` function. We use the other
+for the `>>` operator. FISC only has the logical shift right. So I
+can't implement the `>>` operator in FISC in one instruction, sigh.
+
+If I change the logical shift right operation to an arithmetic shift right,
+then can I do an `lsr` like this:
+
+```
+        mov a, $whatever
+        mov b, $04
+        asr a, b		# Shift right
+        mov b, $0f
+	and a, b		# Lose the top bits
+```
+
+Yes I think so. It's an extra two instructions when printing hex digits.
+Done. I forgot to do a `make realclean` and for a while I was using the
+cached ALU ROM, sigh.
