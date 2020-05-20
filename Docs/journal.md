@@ -748,7 +748,7 @@ and I have these wires declared:
   wire          ARloread;       // Active low, read the AL register
   wire          Aread;          // Active low, read the A register
   wire          Bread;          // Active low, read the B register
-  wire		IRread;		// Active low, read the IR register
+  wire          IRread;         // Active low, read the IR register
   wire          Carryread;      // Active low, load carry from ALU
 ```
 
@@ -765,15 +765,15 @@ Here's the output of the databus reader demux:
 
 ```
   assign Jmpena= dread_out[2];
-  assign ARhiread= ~dread_out[3];		// XXX NOT!
-  assign ARloread= ~dread_out[4];		// XXX NOT!
+  assign ARhiread= ~dread_out[3];               // XXX NOT!
+  assign ARloread= ~dread_out[4];               // XXX NOT!
   assign SPhiread= dread_out[5];
   assign SPloread= dread_out[6];
-  assign Aread= ~dread_out[7];			// XXX NOT!
-  assign Bread= ~dread_out[8];			// XXX NOT!
-  assign IRread= ~dread_out[9];			// XXX NOT!
+  assign Aread= ~dread_out[7];                  // XXX NOT!
+  assign Bread= ~dread_out[8];                  // XXX NOT!
+  assign IRread= ~dread_out[9];                 // XXX NOT!
   assign MEMread= dread_out[10];
-  assign Carryread= ~dread_out[11];		// XXX NOT!
+  assign Carryread= ~dread_out[11];             // XXX NOT!
   assign UARTread= dread_out[12];
 ```
 
@@ -858,3 +858,106 @@ excellent. I might be able to squeeze the design to reduce the dimensions as wel
 As I mentioned the CPU on the Hackaday TTLers Chat, I've decided that it's time to
 make a Github repository for it. So I spent some time cleaning up the files and making
 it ready for uploading.
+
+## Sun 17 May 14:00:36 AEST 2020
+
+I set up the Github repository and made a few typo changes. I've got the 3D model
+for the UM245R back in, and I've spaced out a few things on the PCB. The vias are back
+up over 200, though. I've imported
+the `clc` compiler from the CSCvon8 repository and changed it. It's compiling these
+programs OK: `legetests.c`, `signedprint.cl` and `triangle.cl`. But `himinsky.cl`
+and `hiprhex.cl` don't work yet although they compile and assemble. I've only spent
+an hour doing this so there is room for improvement! I did have to add the `equ`
+pseudo-op to the assembler.
+
+## Mon 18 May 13:14:41 AEST 2020
+
+I'm going to put `clc` aside for a bit and start to think about building this. I've ordered
+a SMT practice kit so I can practice my soldering. Now I need to think about what to order
+and from where.
+
+```
+ C1-C27 0.1uF      Bypass Caps                  Digikey
+ C25    220uF      Power Cap                    Digikey
+ IC1    DS1233-10+ Reset Device                 Digikey
+ J1                Data Bus Pin Header          Digikey
+ J2                Address Bus Pin Header       Digikey
+ J3                uSeq Pin Header              Digikey
+ J4                Control Lines Pin Header     Digikey
+ J5                Clock Pin Header             Digikey
+ SW1    KS01Q01    Pushbutton                   Digikey
+ U1     74LS593    PChi                         Borrow from CSCvon8
+ U2     74LS593    PClo                         Borrow from CSCvon8
+ U3     74HCT138   Address Decode               Digikey
+ U4     74HCT240   Inverter                     Digikey
+ U5, U6 74LS469                                 Utsource
+ U7, U8, U11-U14, U17 74HCT574 Registers        Digikey
+ U9     CY628128E  RAM                          Digikey
+ U10    AT28C64B   ROM                          Digikey
+ U15, U16 74HCT541 Tristate Buffers             Digikey
+ U18    74HCT161   uSeq Counter                 Digikey
+ U19    74HCT138   Databus Write Demux          Digikey
+ U20    74HCT151   Jump Logic                   Digikey
+ U21    74HCT139                                Digikey
+ U22    74HCT154                                Digikey
+ U23    M27C322    ALU                          Borrow from CSCvon8
+ U24    UM245R     UART                         Borrow from CSCvon8
+ U25    AT27C1024  Decode ROM                   Borrow from CSCvon8
+ U26    ECS-100AX  Oscillator                   Borrow from CSCvon8
+```
+
+So I only need to buy some up/down counters from Utsource. The rest comes
+from Digikey and I can reuse some of the CSCvon8 components.
+
+OK, I've ordered what I could from Digikey. I couldn't get
+the 64K SRAM from Digikey so I will have to try elsewhere for that.
+
+## Tue 19 May 12:36:52 AEST 2020
+
+I ordered the 74LS469s and a Hitachi RAM chip from Utsource, but then
+Alastair on the TTLers chat suggested the Alliance Memory AS6C1008
+which is a 128K chip that is still sold. I ordered one from Digikey.
+So I need to update the schematic for that, and also put in a ZIF
+socket 3D shape on the PCB layout. Then cross-check that the footprints
+on the PCB match the chips I've ordered.
+
+I've added the AS6C1008 and found a ZIF socket model. I've swapped the
+RAM and ROM to fit the ZIF socket better. Now I'm letting that run in
+freeroute to see what it does.
+
+I've just rotated the RAM and ROM 90 degrees and the initial via count
+is just 220, so that bodes well! Yes, a few SOICs were 3.9mm wide but
+I had 7.5mm footprints. Now fixed. And freeroute is running again ...
+
+## Tue 19 May 17:46:09 AEST 2020
+
+I also moved the UART out to the edge. We're down to 139 vias and 15.976M
+total trace length at pass 25. Doing well. Completed and down to 133 vias
+and 15.9M total trace length at pass 30 something.
+
+## Wed 20 May 11:21:06 AEST 2020
+
+Going to sleep last night, I had this crazy idea. If I'm putting in a RAM
+chip with more than 64K, how could I access the other 64K banks? Then I
+had the crazy idea: if the 8-bit Carry register was two 4-bit registers
+with their own load lines, I could store the bank number in one register.
+
+But I've given up on this idea because, apart from the A and B register,
+there is no easy way to move data between the banks. As soon as you
+change the register, the old bank is invisible. I was hoping to use one
+bank as a file system but it's not going to work.
+
+But ... say I could do this, e.g. with a 74HCT74 dual D flip/flop: one
+bit for carry, one bit to select the bank. Is there a way to make one
+section of one bank always visible regardless of the bank bit? Such
+as an 8K section of bank 0? I think I'd need at least one more glue
+chip to make this happen and it's only a "would be nice" thing, so
+no I won't go down this crazy path for now :-)
+
+## Wed 20 May 13:09:17 AEST 2020
+
+Yesterday I did look at SDCC as a compiler and assembler as it is
+retargettable. But I think I'd still like to do my own. I'm getting
+to the point where I think I should write a proper assembly grammar.
+But I want soemthing where I can generate the Perl code and distribute
+that, so other people won't have to install a yacc/lex equivalent.

@@ -804,18 +804,6 @@ adr7
 Wire Bus Line
 	8250 750  8950 750 
 Connection ~ 5100 750 
-$Comp
-L Memory_RAM:628128_DIP32_SSOP32 U9
-U 1 1 5E1BEA6F
-P 9200 4650
-F 0 "U9" H 8950 5800 50  0000 C CNN
-F 1 "CY628128E" H 8950 5700 50  0000 C CNN
-F 2 "Package_DIP:DIP-32_W15.24mm" H 9200 4650 50  0001 C CNN
-F 3 "http://www.futurlec.com/Datasheet/Memory/628128.pdf" H 9200 4650 50  0001 C CNN
-F 4 "RAM" H 9200 4650 50  0001 C CNN "Description"
-	1    9200 4650
-	1    0    0    -1  
-$EndComp
 Wire Bus Line
 	5100 750  7650 750 
 Wire Bus Line
@@ -1389,6 +1377,21 @@ Wire Wire Line
 Wire Wire Line
 	2500 2100 2350 2100
 Connection ~ 2500 2200
+Text Notes 2600 6850 0    50   ~ 0
+Low 8K is ROM,\nremainder is RAM
+Text Notes 7050 6950 0    50   ~ 0
+PC, SP and AR can write to the address bus which RAM and ROM reads.\nPC can only read from the address bus.\nSP and AR only read from the data bus.\nROM and RAM write to the data bus. RAM reads also!
+$Comp
+L Memory_RAM:AS6C1008 U9
+U 1 1 5EC8B164
+P 9200 3600
+F 0 "U9" H 9000 3750 50  0000 C CNN
+F 1 "AS6C1008" H 8950 3650 50  0000 C CNN
+F 2 "Package_DIP:DIP-32_W15.24mm_LongPads" H 9200 3600 50  0001 C CNN
+F 3 "" H 9200 3600 50  0001 C CNN
+	1    9200 3600
+	1    0    0    -1  
+$EndComp
 Wire Bus Line
 	850  750  850  6600
 Wire Bus Line
@@ -1403,8 +1406,4 @@ Wire Bus Line
 	10200 1400 10200 6200
 Wire Bus Line
 	8250 750  8250 5250
-Text Notes 2600 6850 0    50   ~ 0
-Low 8K is ROM,\nremainder is RAM
-Text Notes 7050 6950 0    50   ~ 0
-PC, SP and AR can write to the address bus which RAM and ROM reads.\nPC can only read from the address bus.\nSP and AR only read from the data bus.\nROM and RAM write to the data bus. RAM reads also!
 $EndSCHEMATC

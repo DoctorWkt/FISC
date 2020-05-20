@@ -239,12 +239,12 @@ START := MEMwrite IRread PCincr
 	  uSreset Stkhold
 
 # Increment A register
-2D inc_a: Awrite A+1 Carryread Stkhold
+2D inc_a: Awrite A+1 Stkhold
 	  Owrite Aread Stkhold
 	  uSreset Stkhold
 
 # Decrement A register
-2E dec_a: Awrite A-1 Carryread Stkhold
+2E dec_a: Awrite A-1 Stkhold
 	  Owrite Aread Stkhold
 	  uSreset Stkhold
 

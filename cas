@@ -16,6 +16,10 @@ sub load_opcodes {
     my $lnum = 0;
     my %Opcode;
 
+    # Insert pseudo-ops by hand
+    $Inst{equ_word}   = [ 0x100, 0 ];
+    $Opcode{equ_word} = 1;
+
     open( my $IN, "<", "opcodes" ) || die("Cannot read opcodes: $!\n");
     while (<$IN>) {
         chomp;
@@ -44,6 +48,10 @@ my %Symaddr;
 sub get_sym_address {
     my $symbol = shift;
     return (0) if ($firstpass);
+
+    # . means current posn
+    return($posn) if ($symbol eq ".");
+
     die("Unknown symbol on line $linenum: $symbol\n")
       if ( !defined( $Symaddr{$symbol} ) );
     return ( $Symaddr{$symbol} );
@@ -53,10 +61,17 @@ sub get_sym_address {
 # determine the location of the label and add it to the
 # symbol table
 sub generate_sym_addr {
-    my $symbol = shift;
+    my ($symbol, $inst, $dst) = @_;
     return if ( !defined($symbol) );
+
     die("Duplicate symbol on line $linenum: $symbol\n")
       if ( defined( $Symaddr{$symbol} ) );
+
+    # "equ" pseudo-op
+    if (defined($inst) && ($inst eq "equ_word")) {
+      $Symaddr{$symbol} = $dst->[0]; return;
+    }
+
     $Symaddr{$symbol} = $posn;
 }
 
@@ -113,7 +128,7 @@ sub parse_simple_operand {
     }
 
     return ( get_sym_address($1), "word" )    # Symbol
-      if ( $operand =~ m{^(\w+)$} );
+      if ( $operand =~ m{^([\.\w]+)$} );
 
     die("Unrecognised operand on line $linenum: $operand\n");
 }
@@ -254,6 +269,9 @@ sub generate_code {
       if ( !defined( $Inst{$inst} ) );
     my $instsize = $Inst{$inst}[1];
 
+    # Skip any pseudo ops
+    return if ($inst eq "equ_word");
+
     # Determine the size of all the operands.
     # Start with 1 byte of instruction.
     my $opsize = 1;
@@ -359,7 +377,7 @@ foreach my $i ( 0 .. ( @Line - 1 ) ) {
         }
 
         # Set the label's location
-        generate_sym_addr($label);
+        generate_sym_addr($label, $inst, $dst);
 
         # Move the position up
         next if ( !defined($inst) );

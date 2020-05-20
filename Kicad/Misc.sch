@@ -499,18 +499,6 @@ F 4 "Bypass caps" H 2400 2950 50  0001 C CNN "Description"
 	1    2400 2950
 	1    0    0    -1  
 $EndComp
-$Comp
-L Device:C_Small C24
-U 1 1 5EC05676
-P 2650 2950
-F 0 "C24" H 2600 3150 50  0000 L CNN
-F 1 "0.1uF" H 2600 2750 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2650 2950 50  0001 C CNN
-F 3 "~" H 2650 2950 50  0001 C CNN
-F 4 "Bypass caps" H 2650 2950 50  0001 C CNN "Description"
-	1    2650 2950
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	900  2850 1150 2850
 Wire Wire Line
@@ -528,8 +516,6 @@ Connection ~ 1900 2850
 Wire Wire Line
 	2150 2850 2400 2850
 Connection ~ 2150 2850
-Wire Wire Line
-	2400 2850 2650 2850
 Connection ~ 2400 2850
 Wire Wire Line
 	900  3050 1150 3050
@@ -548,8 +534,6 @@ Connection ~ 1900 3050
 Wire Wire Line
 	2150 3050 2400 3050
 Connection ~ 2150 3050
-Wire Wire Line
-	2400 3050 2650 3050
 Connection ~ 2400 3050
 $Comp
 L power:VCC #PWR07
@@ -574,13 +558,7 @@ F 3 "" H 3350 3200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2650 3050 2900 3050
-Wire Wire Line
 	3350 3050 3350 3200
-Connection ~ 2650 3050
-Wire Wire Line
-	2650 2850 2900 2850
-Connection ~ 2650 2850
 $Comp
 L 74LS593:QX14T50B1.843200B50TT U26
 U 1 1 5EC08E25
@@ -603,12 +581,12 @@ NoConn ~ 8750 2250
 $Comp
 L power:GND #PWR09
 U 1 1 5EC0C0E1
-P 8600 2400
-F 0 "#PWR09" H 8600 2150 50  0001 C CNN
-F 1 "GND" H 8605 2227 50  0000 C CNN
-F 2 "" H 8600 2400 50  0001 C CNN
-F 3 "" H 8600 2400 50  0001 C CNN
-	1    8600 2400
+P 8600 2600
+F 0 "#PWR09" H 8600 2350 50  0001 C CNN
+F 1 "GND" H 8605 2427 50  0000 C CNN
+F 2 "" H 8600 2600 50  0001 C CNN
+F 3 "" H 8600 2600 50  0001 C CNN
+	1    8600 2600
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -629,9 +607,9 @@ Wire Wire Line
 Wire Wire Line
 	8750 2350 8600 2350
 Wire Wire Line
-	8600 2350 8600 2400
+	8600 2350 8600 2550
 Wire Wire Line
-	9950 2250 10250 2250
+	9950 2250 10150 2250
 $Comp
 L Connector:Conn_01x10_Female J1
 U 1 1 5EC2788F
@@ -780,9 +758,6 @@ Wire Wire Line
 	3700 4650 4050 4650
 Wire Wire Line
 	4050 4550 3700 4550
-NoConn ~ 4050 4950
-NoConn ~ 3000 6150
-NoConn ~ 1600 5350
 $Comp
 L power:GND #PWR0148
 U 1 1 5ECAE549
@@ -899,74 +874,64 @@ Wire Bus Line
 $Comp
 L power:GND #PWR012
 U 1 1 5ED5E533
-P 8650 4050
-F 0 "#PWR012" H 8650 3800 50  0001 C CNN
-F 1 "GND" H 8650 3900 50  0000 C CNN
-F 2 "" H 8650 4050 50  0001 C CNN
-F 3 "" H 8650 4050 50  0001 C CNN
-	1    8650 4050
+P 8250 4050
+F 0 "#PWR012" H 8250 3800 50  0001 C CNN
+F 1 "GND" H 8250 3900 50  0000 C CNN
+F 2 "" H 8250 4050 50  0001 C CNN
+F 3 "" H 8250 4050 50  0001 C CNN
+	1    8250 4050
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:VCC #PWR011
 U 1 1 5ED5E988
-P 8650 3150
-F 0 "#PWR011" H 8650 3000 50  0001 C CNN
-F 1 "VCC" H 8667 3323 50  0000 C CNN
-F 2 "" H 8650 3150 50  0001 C CNN
-F 3 "" H 8650 3150 50  0001 C CNN
-	1    8650 3150
+P 8250 3150
+F 0 "#PWR011" H 8250 3000 50  0001 C CNN
+F 1 "VCC" H 8267 3323 50  0000 C CNN
+F 2 "" H 8250 3150 50  0001 C CNN
+F 3 "" H 8250 3150 50  0001 C CNN
+	1    8250 3150
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8650 3150 8650 3400
+	8250 3150 8250 3400
 Wire Wire Line
-	8650 3600 8650 3950
+	8250 3600 8250 3950
 Connection ~ 2900 2850
 Connection ~ 2900 3050
-Wire Wire Line
-	2900 3050 3150 3050
-Wire Wire Line
-	2900 2850 3150 2850
 $Comp
 L Device:CP_Small C25
 U 1 1 5ED86267
-P 3150 2950
-F 0 "C25" H 3100 3150 50  0000 L CNN
-F 1 "220uF" H 3100 2750 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D8.0mm_P5.00mm" H 3150 2950 50  0001 C CNN
-F 3 "~" H 3150 2950 50  0001 C CNN
-F 4 "Power cap" H 3150 2950 50  0001 C CNN "Description"
-	1    3150 2950
+P 2900 2950
+F 0 "C25" H 2850 3150 50  0000 L CNN
+F 1 "220uF" H 2850 2750 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D8.0mm_P5.00mm" H 2900 2950 50  0001 C CNN
+F 3 "~" H 2900 2950 50  0001 C CNN
+F 4 "Power cap" H 2900 2950 50  0001 C CNN "Description"
+	1    2900 2950
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:C_Small C26
 U 1 1 5EBD4842
-P 2900 2950
-F 0 "C26" H 2850 3150 50  0000 L CNN
-F 1 "0.1uF" H 2850 2750 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2900 2950 50  0001 C CNN
-F 3 "~" H 2900 2950 50  0001 C CNN
-F 4 "Bypass caps" H 2900 2950 50  0001 C CNN "Description"
-	1    2900 2950
+P 2650 2950
+F 0 "C26" H 2600 3150 50  0000 L CNN
+F 1 "0.1uF" H 2600 2750 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2650 2950 50  0001 C CNN
+F 3 "~" H 2650 2950 50  0001 C CNN
+F 4 "Bypass caps" H 2650 2950 50  0001 C CNN "Description"
+	1    2650 2950
 	1    0    0    -1  
 $EndComp
-Connection ~ 3150 3050
-Wire Wire Line
-	3150 3050 3350 3050
 Wire Wire Line
 	3350 2750 3350 2850
-Wire Wire Line
-	3350 2850 3150 2850
-Connection ~ 3150 2850
 $Comp
 L 74xx:74LS139 U21
 U 3 1 5EC2E33A
 P 9400 5400
 F 0 "U21" H 9630 5446 50  0000 L CNN
 F 1 "74HCT139" H 9630 5355 50  0000 L CNN
-F 2 "Package_SO:SOIC-16W_5.3x10.2mm_P1.27mm" H 9400 5400 50  0001 C CNN
+F 2 "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm" H 9400 5400 50  0001 C CNN
 F 3 "http://www.ti.com/lit/gpn/sn74LS139" H 9400 5400 50  0001 C CNN
 	3    9400 5400
 	1    0    0    -1  
@@ -1000,31 +965,31 @@ Wire Wire Line
 $Comp
 L DS1233:DS1233-10+ IC1
 U 1 1 5EBEBA54
-P 8650 3400
-F 0 "IC1" H 9000 3650 50  0000 L CNN
-F 1 "DS1233-10+" H 8850 3550 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92" H 9400 3500 50  0001 L CNN
-F 3 "http://docs-emea.rs-online.com/webdocs/0a29/0900766b80a2926b.pdf" H 9400 3400 50  0001 L CNN
-F 4 "Reset Device" H 9400 3300 50  0001 L CNN "Description"
-F 5 "" H 9400 3200 50  0001 L CNN "Height"
-F 6 "Maxim Integrated" H 9400 3100 50  0001 L CNN "Manufacturer_Name"
-F 7 "DS1233-10+" H 9400 3000 50  0001 L CNN "Manufacturer_Part_Number"
-F 8 "700-DS1233-10" H 9400 2900 50  0001 L CNN "Mouser Part Number"
-F 9 "https://www.mouser.com/Search/Refine.aspx?Keyword=700-DS1233-10" H 9400 2800 50  0001 L CNN "Mouser Price/Stock"
-F 10 "1901547P" H 9400 2700 50  0001 L CNN "RS Part Number"
-F 11 "http://uk.rs-online.com/web/p/products/1901547P" H 9400 2600 50  0001 L CNN "RS Price/Stock"
-	1    8650 3400
+P 8250 3400
+F 0 "IC1" H 8600 3650 50  0000 L CNN
+F 1 "DS1233-10+" H 8450 3550 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92" H 9000 3500 50  0001 L CNN
+F 3 "http://docs-emea.rs-online.com/webdocs/0a29/0900766b80a2926b.pdf" H 9000 3400 50  0001 L CNN
+F 4 "Reset Device" H 9000 3300 50  0001 L CNN "Description"
+F 5 "" H 9000 3200 50  0001 L CNN "Height"
+F 6 "Maxim Integrated" H 9000 3100 50  0001 L CNN "Manufacturer_Name"
+F 7 "DS1233-10+" H 9000 3000 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "700-DS1233-10" H 9000 2900 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.com/Search/Refine.aspx?Keyword=700-DS1233-10" H 9000 2800 50  0001 L CNN "Mouser Price/Stock"
+F 10 "1901547P" H 9000 2700 50  0001 L CNN "RS Part Number"
+F 11 "http://uk.rs-online.com/web/p/products/1901547P" H 9000 2600 50  0001 L CNN "RS Price/Stock"
+	1    8250 3400
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:C_Small C27
 U 1 1 5EC0E441
-P 9550 3750
-F 0 "C27" H 9642 3796 50  0000 L CNN
-F 1 "0.01uF" H 9642 3705 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 9550 3750 50  0001 C CNN
-F 3 "~" H 9550 3750 50  0001 C CNN
-	1    9550 3750
+P 9150 3750
+F 0 "C27" H 9242 3796 50  0000 L CNN
+F 1 "0.01uF" H 9242 3705 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 9150 3750 50  0001 C CNN
+F 3 "~" H 9150 3750 50  0001 C CNN
+	1    9150 3750
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1040,28 +1005,22 @@ F 4 "Reset button" H 10000 3750 50  0001 C CNN "Description"
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	10000 3950 9550 3950
-Wire Wire Line
-	9550 3500 10000 3500
-Wire Wire Line
 	10000 3550 10000 3500
 Connection ~ 10000 3500
 Wire Wire Line
 	10000 3500 10200 3500
 Wire Wire Line
-	9550 3650 9550 3500
-Connection ~ 9550 3500
+	9150 3650 9150 3500
 Wire Wire Line
-	9550 3850 9550 3950
+	9150 3850 9150 3950
 Wire Wire Line
-	9550 3950 8650 3950
-Connection ~ 9550 3950
-Connection ~ 8650 3950
+	9150 3950 8250 3950
+Connection ~ 8250 3950
 Wire Wire Line
-	8650 3950 8650 4050
+	8250 3950 8250 4050
 Text Notes 7150 2400 0    50   ~ 0
 A 3.57MHz oscillator generates\nthe main clock pulse.
-Text Notes 6950 3700 0    50   ~ 0
+Text Notes 6550 3700 0    50   ~ 0
 The DS1233 holds down the ~Reset\nline until power settles. The pushbutton\nallows for a manual reset.
 Text Notes 8300 5500 0    50   ~ 0
 The power section\nfor U21
@@ -1071,6 +1030,221 @@ Text Notes 1800 7000 0    50   ~ 0
 These three pin headers allow the\naddress bus, data bus and microsequence\nvalue to be examined by external equipment.
 Text Notes 7100 6750 0    50   ~ 0
 Miscellaneous components in the design.
+Text GLabel 5400 6000 2    50   Input ~ 0
+ALUop0
+Text GLabel 5400 5900 2    50   Input ~ 0
+ALUop1
+Text GLabel 5400 5800 2    50   Input ~ 0
+ALUop2
+Text GLabel 5400 5700 2    50   Input ~ 0
+ALUop3
+Text GLabel 5500 4500 2    50   Input ~ 0
+~uSreset
+Text GLabel 5500 5600 2    50   Input ~ 0
+DbWr0
+Text GLabel 5500 5500 2    50   Input ~ 0
+DbWr1
+Text GLabel 5500 5400 2    50   Input ~ 0
+DbWr2
+Text GLabel 5400 5300 2    50   Input ~ 0
+AbWr0
+Text GLabel 5400 5200 2    50   Input ~ 0
+AbWr1
+Text GLabel 5500 5100 2    50   Input ~ 0
+DbRd0
+Text GLabel 5500 5000 2    50   Input ~ 0
+DbRd1
+Text GLabel 5500 4900 2    50   Input ~ 0
+DbRd2
+Text GLabel 5500 4800 2    50   Input ~ 0
+DbRd3
+Text GLabel 5400 4700 2    50   Input ~ 0
+StkOp0
+Text GLabel 5400 4600 2    50   Input ~ 0
+StkOp1
+$Comp
+L Connector:Conn_01x18_Female J4
+U 1 1 5EC4317E
+P 5000 5400
+F 0 "J4" H 4650 4250 50  0000 L CNN
+F 1 "Control Lines Pin Header" H 4150 4350 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x18_P2.54mm_Vertical" H 5000 5400 50  0001 C CNN
+F 3 "~" H 5000 5400 50  0001 C CNN
+F 4 "Address Bus Pin Header" H 5000 5400 50  0001 C CNN "Description"
+	1    5000 5400
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR013
+U 1 1 5EC4E2AD
+P 5400 6200
+F 0 "#PWR013" H 5400 5950 50  0001 C CNN
+F 1 "GND" H 5405 6027 50  0000 C CNN
+F 2 "" H 5400 6200 50  0001 C CNN
+F 3 "" H 5400 6200 50  0001 C CNN
+	1    5400 6200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5200 6200 5400 6200
+Wire Wire Line
+	5200 6000 5400 6000
+Wire Wire Line
+	5200 5900 5400 5900
+Wire Wire Line
+	5400 5800 5200 5800
+Wire Wire Line
+	5200 5700 5400 5700
+Wire Wire Line
+	5500 5600 5200 5600
+Wire Wire Line
+	5200 5500 5500 5500
+Wire Wire Line
+	5500 5400 5200 5400
+Wire Wire Line
+	5200 5300 5400 5300
+Wire Wire Line
+	5400 5200 5200 5200
+Wire Wire Line
+	5200 5100 5500 5100
+Wire Wire Line
+	5500 5000 5200 5000
+Wire Wire Line
+	5200 4900 5500 4900
+Wire Wire Line
+	5500 4800 5200 4800
+Wire Wire Line
+	5200 4700 5400 4700
+Wire Wire Line
+	5400 4600 5200 4600
+Wire Wire Line
+	5200 4500 5500 4500
+$Comp
+L Connector:Conn_01x02_Female J5
+U 1 1 5ECB0836
+P 10450 2450
+F 0 "J5" H 10300 2250 50  0000 L CNN
+F 1 "Clock Pin Header" H 10050 2150 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 10450 2450 50  0001 C CNN
+F 3 "~" H 10450 2450 50  0001 C CNN
+F 4 "Clock Pin Header" H 10450 2450 50  0001 C CNN "Description"
+	1    10450 2450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9150 3500 9550 3500
+Connection ~ 9150 3500
+Wire Wire Line
+	9150 3950 9550 3950
+Connection ~ 9150 3950
+Wire Wire Line
+	9550 3700 9550 3500
+Connection ~ 9550 3500
+Wire Wire Line
+	9550 3500 10000 3500
+Wire Wire Line
+	9550 3800 9550 3950
+Connection ~ 9550 3950
+Wire Wire Line
+	9550 3950 10000 3950
+Wire Wire Line
+	2400 2850 2650 2850
+Wire Wire Line
+	2400 3050 2650 3050
+Connection ~ 2650 2850
+Wire Wire Line
+	2650 2850 2900 2850
+Connection ~ 2650 3050
+Wire Wire Line
+	2650 3050 2900 3050
+Wire Wire Line
+	2900 2850 3350 2850
+Wire Wire Line
+	2900 3050 3350 3050
+Wire Wire Line
+	10150 2250 10150 2450
+Wire Wire Line
+	10150 2450 10250 2450
+Connection ~ 10150 2250
+Wire Wire Line
+	10150 2250 10250 2250
+Wire Wire Line
+	10250 2550 8600 2550
+Connection ~ 8600 2550
+Wire Wire Line
+	8600 2550 8600 2600
+$Comp
+L power:VCC #PWR0153
+U 1 1 5ED4A434
+P 850 5300
+F 0 "#PWR0153" H 850 5150 50  0001 C CNN
+F 1 "VCC" H 867 5473 50  0000 C CNN
+F 2 "" H 850 5300 50  0001 C CNN
+F 3 "" H 850 5300 50  0001 C CNN
+	1    850  5300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1600 5350 1250 5350
+Wire Wire Line
+	1250 5350 1250 5400
+Wire Wire Line
+	1250 5400 850  5400
+Wire Wire Line
+	850  5400 850  5300
+$Comp
+L power:VCC #PWR0154
+U 1 1 5ED54DCD
+P 2350 6150
+F 0 "#PWR0154" H 2350 6000 50  0001 C CNN
+F 1 "VCC" H 2367 6323 50  0000 C CNN
+F 2 "" H 2350 6150 50  0001 C CNN
+F 3 "" H 2350 6150 50  0001 C CNN
+	1    2350 6150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 6150 2700 6150
+Wire Wire Line
+	2700 6150 2700 6200
+Wire Wire Line
+	2700 6200 2350 6200
+Wire Wire Line
+	2350 6200 2350 6150
+$Comp
+L power:VCC #PWR0155
+U 1 1 5ED5C94F
+P 3450 4950
+F 0 "#PWR0155" H 3450 4800 50  0001 C CNN
+F 1 "VCC" H 3467 5123 50  0000 C CNN
+F 2 "" H 3450 4950 50  0001 C CNN
+F 3 "" H 3450 4950 50  0001 C CNN
+	1    3450 4950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4050 4950 3700 4950
+Wire Wire Line
+	3700 4950 3700 5000
+Wire Wire Line
+	3700 5000 3450 5000
+Wire Wire Line
+	3450 5000 3450 4950
+$Comp
+L power:VCC #PWR0156
+U 1 1 5ED65C52
+P 5950 6050
+F 0 "#PWR0156" H 5950 5900 50  0001 C CNN
+F 1 "VCC" H 5967 6223 50  0000 C CNN
+F 2 "" H 5950 6050 50  0001 C CNN
+F 3 "" H 5950 6050 50  0001 C CNN
+	1    5950 6050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5200 6100 5950 6100
+Wire Wire Line
+	5950 6100 5950 6050
 Wire Bus Line
 	3600 4650 3600 5550
 Wire Bus Line

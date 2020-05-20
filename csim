@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Data::Dumper;
-#use Term::ReadKey;
+use Term::ReadKey;
 #use IO::Pty;
 use Storable;
 
