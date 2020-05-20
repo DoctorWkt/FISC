@@ -987,4 +987,15 @@ then can I do an `lsr` like this:
 
 Yes I think so. It's an extra two instructions when printing hex digits.
 Done. I forgot to do a `make realclean` and for a while I was using the
-cached ALU ROM, sigh.
+cached ALU ROM, sigh. Just pushed the compiler up to Github.
+
+## Wed 20 May 16:26:21 AEST 2020
+
+Next problem: the Verilog model outputs the same as `csim` for all the assembly
+examples, but it doesn't output the same for the `clc` example programs. Not
+sure why not yet. I think it might be the compare and jump instructions.
+No, it's the `inc a` instruction. I must have the microcode wrong. No,
+I had the O register wired wrong. It was loading when `Carryread` was being
+asserted, not all the time on `clkbar`. Fixed. All the assembly tests pass.
+Now I need to check the hi-level programs. `himinsky.cl` works though. Yes,
+they all work fine.

@@ -196,7 +196,7 @@ module ttlfisc (i_clk, reset, PCval);
   // Several registers; most read from the data bus
   ttl_74574 A(Awrite, Aread, reset, databus, Aval);
   ttl_74574 B(1'b0, Bread, reset, databus, Bval);
-  ttl_74574 O(Owrite, Carryread, reset, ALUresult[7:0], Oval);
+  ttl_74574 O(Owrite, clk_bar, reset, ALUresult[7:0], Oval);
   ttl_74574 AH(ARwrite, ARhiread, reset, databus, ARhival);
   ttl_74574 AL(ARwrite, ARloread, reset, databus, ARloval);
   assign ARval= { ARhival, ARloval };
