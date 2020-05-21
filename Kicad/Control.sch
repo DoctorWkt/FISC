@@ -4,8 +4,8 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 5 5
-Title ""
-Date ""
+Title "FISC TTL CPU"
+Date "2020-05-21"
 Rev ""
 Comp ""
 Comment1 ""
@@ -654,8 +654,6 @@ Wire Wire Line
 	7750 4100 8000 4100
 Wire Wire Line
 	7750 4200 8000 4200
-Text GLabel 6550 4300 0    50   Input ~ 0
-Clk
 Wire Wire Line
 	6550 4300 6750 4300
 $Comp
@@ -670,8 +668,6 @@ F 4 "PCincr and Address Write Demux" H 7250 3200 50  0001 C CNN "Description"
 	1    7250 3200
 	1    0    0    -1  
 $EndComp
-Text GLabel 6500 3400 0    50   Input ~ 0
-Clk
 Text GLabel 6500 3100 0    50   Input ~ 0
 StkOp1
 Text GLabel 6500 3200 0    50   Input ~ 0
@@ -736,8 +732,6 @@ Wire Wire Line
 	2850 5500 3050 5500
 Wire Wire Line
 	3050 5600 2850 5600
-Text Notes 7350 3350 2    50   ~ 0
-PC\nIncrement
 Text Notes 3600 6300 2    50   ~ 0
 Databus\n Read\nDemux
 Text GLabel 2850 5900 0    50   Input ~ 0
@@ -961,8 +955,6 @@ Wire Wire Line
 	4050 5600 5050 5600
 Text Notes 10350 3050 0    50   ~ 0
 Outputs are high\nuntil Clk goes low
-Text Notes 6300 3700 0    50   ~ 0
-Outputs are high\nuntil Clk goes low
 Text Notes 2450 6150 0    50   ~ 0
 Outputs are high\nuntil Clk goes low
 Text Notes 6450 1150 0    50   ~ 0
@@ -983,6 +975,10 @@ Text Notes 7100 7000 0    50   ~ 0
 The uSeq counter along with the IR's value look up a microinstruction in the\nDecode ROM. These 16 bits are then decoded by the various demuxes\nto produce the actual control lines. The Jump Logic takes the status output\nfrom the ALU plus some of the IT bits to determine\nif the PC's value should be loaded (i.e. to jump the PC's value).
 Text Notes 7000 5200 0    50   ~ 0
 The '240 is simply eight inverters to get the active level\nright for seven control lines. One other inverter creates the\ninverted clock signal.
+Text Notes 7350 3350 2    50   ~ 0
+PC\nIncrement
+Text GLabel 6550 4300 0    50   Input ~ 0
+Lo
 Wire Wire Line
 	2350 4400 2850 4400
 Wire Wire Line
@@ -997,4 +993,6 @@ Wire Bus Line
 	1050 750  1050 2400
 Wire Bus Line
 	2950 1900 2950 4400
+Text GLabel 6500 3400 0    50   Input ~ 0
+Lo
 $EndSCHEMATC

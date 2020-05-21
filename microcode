@@ -16,7 +16,7 @@ A*B        = 0007	# low 8-bit result
 A/B        = 0008
 A%B        = 0009
 A+0	   = 000A	# uses carry-in
-A-Bcomp    = 000B	# no carry-in
+A-Bcomp    = 000B	# no carry-in, sets flags, outputs B's value
 Zero       = 000C
 A+1        = 000D
 A-1        = 000E
@@ -71,6 +71,13 @@ START := MEMwrite IRread PCincr
 # No operation
 00 nop: uSreset Stkhold
 
+# Load memory location with constant $XX.
+01 mov_word_byte: MEMwrite ARloread PCincr	# Get the address into AR
+        MEMwrite ARhiread Zero PCincr		# Ensure carry is clear
+	MEMwrite A+0 PCincr			# Load const into Oreg
+	ARwrite Owrite MEMread Stkhold		# Write to memory location
+	uSreset Stkhold
+
 # Load A with constant $XX
 02 mov_a_byte: MEMwrite Aread PCincr
 	uSreset Stkhold
@@ -85,7 +92,12 @@ START := MEMwrite IRread PCincr
 	ARwrite Awrite MEMread Stkhold
         uSreset Stkhold
 
-# 05 was mov_word_b, can we do it through the ALU?
+# Store B to memory
+05 mov_word_b: MEMwrite ARloread PCincr
+	 MEMwrite ARhiread PCincr
+	 Awrite A-Bcomp Stkhold
+	 ARwrite Owrite MEMread Stkhold
+         uSreset Stkhold
 
 # Load A from memory
 06 mov_a_word: MEMwrite ARloread PCincr
@@ -103,7 +115,10 @@ START := MEMwrite IRread PCincr
 08 out_a: Awrite UARTread Stkhold
          uSreset Stkhold
 
-# 09 was Write B to the UART. Can we do it through the ALU?
+# Write B to the UART
+09 out_b: Awrite A-Bcomp Stkhold
+	 Owrite UARTread Stkhold
+         uSreset Stkhold
 
 # Read A from the UART
 0A in_a: UARTwrite Aread Stkhold
@@ -118,7 +133,11 @@ START := MEMwrite IRread PCincr
 	SPwrite Awrite MEMread Stkhold
         uSreset Stkhold
 
-# 0D was Push B to the stack. Can we do it through the ALU?
+# Push B to the stack.
+0D push_b: Stkdecr
+	Awrite A-Bcomp Stkhold
+	SPwrite Owrite MEMread Stkhold
+        uSreset Stkhold
 
 # Pop A from the stack.
 0E pop_a: SPwrite MEMwrite Aread Stkhold
@@ -182,6 +201,22 @@ START := MEMwrite IRread PCincr
 
 # Clear the carry bit
 18 clc: Zero Carryread Stkhold
+        uSreset Stkhold
+
+# Output from memory to UART
+19 out_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite UARTread Stkhold
+        uSreset Stkhold
+
+# Output constant to UART
+1A out_byte: MEMwrite UARTread PCincr
+	uSreset Stkhold
+
+# Read from UART to memory
+1B in_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+	ARwrite UARTwrite MEMread Stkhold
         uSreset Stkhold
 
 # 20-2F instructions: A= A op B
@@ -254,6 +289,94 @@ START := MEMwrite IRread PCincr
 	  uSreset Stkhold
 
 # 30-3F instructions: Mem= Mem op B
+30 add_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A+B Carryread Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+31 sub_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A-B Carryread Stkhold
+        ARwrite Owrite MEMread Stkhold
+        uSreset Stkhold
+
+32 and_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A&B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+33 or_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A|B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+34 xor_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A^B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+35 lsl_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A<<B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+36 asr_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A>>B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+37 mul_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A*B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+38 div_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A/B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+39 mod_word_b: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A%B Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+3A cinc_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A+0 Carryread Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+3C clr_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr Zero Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+3D inc_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A+1 Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+3E dec_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite A-1 Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
+
+3F neg_word: MEMwrite ARloread PCincr
+        MEMwrite ARhiread PCincr
+        ARwrite MEMwrite ~A Stkhold
+	ARwrite Owrite MEMread Stkhold
+	uSreset Stkhold
 
 # 40-4F instructions: special purpose
 
@@ -297,11 +420,14 @@ START := MEMwrite IRread PCincr
 44 mov_b_a: Awrite Bread Stkhold
           uSreset Stkhold
 
-# Copy B to A. Can we do it through the ALU?
+# Copy B to A
+45 mov_a_b: Awrite A-Bcomp Stkhold
+	    Owrite Aread Stkhold
+            uSreset Stkhold
 
 # Load A from stack pointer with 16-bit offset.
 # B is destroyed
-45 mov_a_sp+word: Zero Carryread Stkhold		# Clear the carry
+46 mov_a_sp+word: Zero Carryread Stkhold		# Clear the carry
 	     MEMwrite Bread PCincr			# Get the low offset in B
 	     SPwrite ADlowrite A+B Carryread Stkhold	# SPlo+B => Oreg
 	     Owrite ARloread Stkhold			# and stored into ARlo
@@ -312,13 +438,13 @@ START := MEMwrite IRread PCincr
              uSreset Stkhold
 
 # Set the stack pointer to an address
-46 mov_sp_word: MEMwrite SPloread PCincr
+47 mov_sp_word: MEMwrite SPloread PCincr
         MEMwrite SPhiread PCincr
         uSreset Stkhold
 
 # Write A through the stack pointer with 16-bit offset.
 # B is destroyed
-47 mov_sp+word_a: Zero Carryread Stkhold		# Clear the carry
+48 mov_sp+word_a: Zero Carryread Stkhold		# Clear the carry
 	     MEMwrite Bread PCincr			# Get the low offset in B
 	     SPwrite ADlowrite A+B Carryread Stkhold    # SPlo+B => Oreg
              Owrite ARloread Stkhold                    # and stored into ARlo
@@ -328,9 +454,9 @@ START := MEMwrite IRread PCincr
 	     ARwrite Awrite MEMread Stkhold		# $ADDR,B = A
              uSreset Stkhold
 
-# Load A from stack pointer with constant offset
+# Load A from stack pointer with constant offset.
 # B is destroyed
-48 mov_a_sp+byte: MEMwrite Bread PCincr
+49 mov_a_sp+byte: MEMwrite Bread PCincr
 	  Zero Carryread Stkhold			# Clear the carry
 	  SPwrite ADlowrite A+B Carryread Stkhold	# SPlo+B => Oreg
 	  Owrite ARloread Stkhold			# and stored into ARlo
@@ -350,7 +476,7 @@ START := MEMwrite IRread PCincr
         uSreset Stkhold
 
 # Absolute jump. Has to be at X0 so that
-# we do a jump if zero
+# we do a jump if zero.
 # Always jump to $XXXX
 60 jmp_word: MEMwrite ARloread PCincr
 	MEMwrite ARhiread PCincr

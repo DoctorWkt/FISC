@@ -115,6 +115,11 @@ foreach $carryin ( 0 .. 1 ) {
 		# Add on any not negative and not zero flag
 	        $result |= NOTNNOTZ if (!$negative && !$zero);
 
+		# Special case. For the A-B comparison operation, replace
+		# the low eight bits with B's value. This allows to get
+		# B's value out on the data bus.
+		$result = ($result & 0xff00) | $B if ($aluop == 0xb);
+
                 # Put the result into the ROM
                 $ROM[ ( $carryin << 20) | ( $aluop << 16 ) | ( $A << 8 ) | $B ]
 									= $result;

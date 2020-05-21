@@ -999,3 +999,79 @@ I had the O register wired wrong. It was loading when `Carryread` was being
 asserted, not all the time on `clkbar`. Fixed. All the assembly tests pass.
 Now I need to check the hi-level programs. `himinsky.cl` works though. Yes,
 they all work fine.
+
+## Thu 21 May 09:03:04 AEST 2020
+
+I printed out the schematic and I've done a pass through it just looking at
+the pin assignments for all the components. They all look OK except for
+the octal inverter 74HCT240. I need to find a few more datasheets to confirm
+the pin assignments, then work out if Kicad has it wrong. Ouch, I have two
+datasheets with completely different pin assignments! Which one is correct?
+I think I'm going to have to trust the Nexperia datasheet: rev 4 2016,
+against the TI datasheet: October 2004. It also agrees with the Kicad pin
+assignments. The TTLers suggest to test the hardware. It's SOIC but I might
+be able to wire up one inverter with fly leads and see.
+
+Someone on the Digital Design HQ Discord pointed out that the labelling is
+consistent: for example, although 2Y0 and 2Y3 are swapped, so are 2A0 and 2A3.
+So it really doesn't matter, phew!
+
+## Thu 21 May 11:07:13 AEST 2020
+
+Now doing the wiring and the purpose for all the pins. Mostly good, but I see
+that I've wired up the two active low enables on the 74HCT139 to `i_clk`. But
+the Verilog design has:
+
+```
+  ttl_74139 #(.BLOCKS(1)) abus_writer(1'b0, AbusWr, awrite_out);
+  ttl_74139 #(.BLOCKS(1)) pcincr_demux(1'b0, StkOp, pcincr_demux_out);
+```
+
+with them wired low. I think the Verilog version is correct. We always want
+something writing to the address bus, so no need for the clock signal. For
+the PC increment logic, if we used `i_clk` as the output enable, then it will
+enable `PCincr` when the clock drops (second half of the clock cycle). But with
+it wired low, `PCincr` would only go low when both `StkOp` lines are high.
+
+The Address Bus logic can definitely be low. I'll go check the PC increment in
+Verilog and see what happens. It works when always low, doesn't work when set
+to `i_clk`, so I'll rewire it low! Done. And we're freerouting again ...
+
+## Thu 21 May 11:58:45 AEST 2020
+
+I've been trying to work on a way to get B out on the data bus. I think I can do it.
+The `A-Bcomp` ALU operation is used to compare A against B. This sets the top
+eight bits from the ALU as comparison result bits. But we don't use the lower
+eight bits (i.e the actual A-B result). So I could put B's value in the bottom
+eight bits. I'll go try it and see what it does.
+
+Yes, it works. I've added several more instructions with B's value on the data
+bus, and I've written a test for it. All existing tests and the compiler runs
+still work.
+
+Freeroute keeps crashing or locking up on the new board design. Not sure why.
+
+I've added even more instructions to the instruction set. I've fixed `csim` to
+reset the terminal if several signals arrive.
+
+Back to freeroute. I've made the board a bit wider in the hope that it gives the
+program more 'space' to route things. I've also found two "newer" free routers
+on Github, so I'm running all three at the same time to see what they do. Yes,
+the original isn't crashing now so that's good. Well, one of them is completely
+useless. One calls itself version 1.3.2-alpha and the original is 1.3.1. So I'm
+running just these two now and will see how they go.
+
+## Fri 22 May 08:37:08 AEST 2020
+
+Well, version 1.3.2-alpha of freerouter is much better than 1.3.1. 1.3.2a got
+down to 121 vias, 16.15M total trace length whereas 1.3.1 got to 130 vias and
+16.00M total trace length. So I've got a routed PCB again!
+
+In terms of the PCB, I think I'll have to wait now for all the parts to arrive.
+I will print out the PCB design on paper and make sure that all the parts match
+the footprints. Then I can order the PCB.
+
+In the meantime, I might start working on writing a new FISC backend for my
+ACWJ C compiler. I won't use registers: the A and B will just be used to get
+things done. I'll use 16-bit `int`s with 8-bit `char`s and 32-bit `long`s. I'll
+start with `int`s and `chars` though.

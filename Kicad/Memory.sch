@@ -4,8 +4,8 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 5
-Title ""
-Date ""
+Title "FISC TTL CPU"
+Date "2020-05-21"
 Rev ""
 Comp ""
 Comment1 ""
@@ -1387,7 +1387,7 @@ U 1 1 5EC8B164
 P 9200 3600
 F 0 "U9" H 9000 3750 50  0000 C CNN
 F 1 "AS6C1008" H 8950 3650 50  0000 C CNN
-F 2 "Package_DIP:DIP-32_W15.24mm_LongPads" H 9200 3600 50  0001 C CNN
+F 2 "Package_DIP:DIP-32_W15.24mm" H 9200 3600 50  0001 C CNN
 F 3 "" H 9200 3600 50  0001 C CNN
 	1    9200 3600
 	1    0    0    -1  

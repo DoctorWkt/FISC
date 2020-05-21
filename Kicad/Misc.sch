@@ -4,8 +4,8 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 3 5
-Title ""
-Date ""
+Title "FISC TTL CPU"
+Date "2020-05-21"
 Rev ""
 Comp ""
 Comment1 ""
@@ -77,7 +77,7 @@ Wire Wire Line
 Connection ~ 9300 1250
 Text GLabel 10250 2250 2    50   Output ~ 0
 Clk
-Text GLabel 10200 3500 2    50   Output ~ 0
+Text GLabel 9900 3500 2    50   Output ~ 0
 ~Reset
 $Comp
 L Device:C_Small C1
@@ -995,20 +995,20 @@ $EndComp
 $Comp
 L Switch:SW_Push SW1
 U 1 1 5EC0EA9A
-P 10000 3750
-F 0 "SW1" V 9954 3898 50  0000 L CNN
-F 1 "SW_Push" V 10045 3898 50  0000 L CNN
-F 2 "Button_Switch_THT:Push_E-Switch_KS01Q01" H 10000 3950 50  0001 C CNN
-F 3 "" H 10000 3950 50  0001 C CNN
-F 4 "Reset button" H 10000 3750 50  0001 C CNN "Description"
-	1    10000 3750
+P 9700 3750
+F 0 "SW1" V 9654 3898 50  0000 L CNN
+F 1 "SW_Push" V 9745 3898 50  0000 L CNN
+F 2 "Button_Switch_THT:Push_E-Switch_KS01Q01" H 9700 3950 50  0001 C CNN
+F 3 "" H 9700 3950 50  0001 C CNN
+F 4 "Reset button" H 9700 3750 50  0001 C CNN "Description"
+	1    9700 3750
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	10000 3550 10000 3500
-Connection ~ 10000 3500
+	9700 3550 9700 3500
+Connection ~ 9700 3500
 Wire Wire Line
-	10000 3500 10200 3500
+	9700 3500 9900 3500
 Wire Wire Line
 	9150 3650 9150 3500
 Wire Wire Line
@@ -1132,22 +1132,6 @@ F 4 "Clock Pin Header" H 10450 2450 50  0001 C CNN "Description"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9150 3500 9550 3500
-Connection ~ 9150 3500
-Wire Wire Line
-	9150 3950 9550 3950
-Connection ~ 9150 3950
-Wire Wire Line
-	9550 3700 9550 3500
-Connection ~ 9550 3500
-Wire Wire Line
-	9550 3500 10000 3500
-Wire Wire Line
-	9550 3800 9550 3950
-Connection ~ 9550 3950
-Wire Wire Line
-	9550 3950 10000 3950
-Wire Wire Line
 	2400 2850 2650 2850
 Wire Wire Line
 	2400 3050 2650 3050
@@ -1245,6 +1229,12 @@ Wire Wire Line
 	5200 6100 5950 6100
 Wire Wire Line
 	5950 6100 5950 6050
+Wire Wire Line
+	9150 3500 9700 3500
+Wire Wire Line
+	9150 3950 9700 3950
+Connection ~ 9150 3500
+Connection ~ 9150 3950
 Wire Bus Line
 	3600 4650 3600 5550
 Wire Bus Line

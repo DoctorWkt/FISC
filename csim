@@ -121,6 +121,11 @@ my @ALUop = (
     "~A",
 );
 
+# Function to set the terminal back to normal
+sub restore_terminal {
+  ReadMode('normal', $IN); exit(0);
+}
+
 # Enable debugging, pty I/O and randomised memory
 while (@ARGV > 0) {
   # Set debug mode
@@ -143,8 +148,12 @@ while (@ARGV > 0) {
   die("Usage: $0 [-d] [-p] [-r]\n-d: debug, -r: randomise RAM, -p: open pty\n");
 }
 
-# Set the UART up to read one char at a time
-# ReadMode('cbreak', $IN);
+# Set the UART up to read one char at a time,
+# and ensure that we restore it if signals arrive
+ReadMode('cbreak', $IN);
+$SIG{INT}  = \&restore_terminal;
+$SIG{TERM} = \&restore_terminal;
+$SIG{PIPE} = \&restore_terminal;
 
 # Load the ALU ROM
 my $ROMIN;
@@ -352,7 +361,7 @@ while (1) {
     # If the instruction is testing for an available UART character to
     # read and we have one, don't jump. If not, try to read one and
     # jump if that fails. If we read one, put it in the $inchar buffer.
-    if ($jumpop==6 && !defined($inchar)) {
+    if ($jumpop==7 && !defined($inchar)) {
 
       # This code if we are reading from a terminal
       if (-t $IN) {
@@ -382,5 +391,4 @@ while (1) {
 }
 
 # Clean up and exit
-# ReadMode('normal', $IN);
-exit(0);
+restore_terminal();
