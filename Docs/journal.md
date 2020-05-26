@@ -1075,3 +1075,159 @@ In the meantime, I might start working on writing a new FISC backend for my
 ACWJ C compiler. I won't use registers: the A and B will just be used to get
 things done. I'll use 16-bit `int`s with 8-bit `char`s and 32-bit `long`s. I'll
 start with `int`s and `chars` though.
+
+Nope, I need "registers" for all the temporary calculations in expressions.
+How about eight 4-byte memory locations to be used as registers. I'm thinking
+of putting them up at the top of memory, and moving the SP down to $FFE0. This
+gives me eight 32-bit registers. I'll probably go little-endian :-) And if I
+see any register spills, I can always add more registers!
+
+I think I'll also have to write an assembly optimiser to walk the generated
+code and see what things can be improved.
+
+## Fri 22 May 18:37:21 AEST 2020
+
+My Digikey parts arrived today. I haven't opened the box yet but now I can
+print out the PCB layout and check that the parts will fit.
+
+## Sat 23 May 10:06:03 AEST 2020
+
+It took me a while to get the layout printed to the correct scale. I had
+everything set at 100%, but it turned I had to scale by 103.25%. I worked
+this out by putting a known length line on the silkscreen and used that to
+determine the scaling.
+
+This morning I got out all the Digikey parts, plus the parts I already have
+and the results are that everything that I have fits. I do need to order
+these from Jaycar:
+
+ + two sockets for the 74LS469s: don't exist, use pin headers.
+ + maybe some more rectangular LEDs: green ZD0232, yellow ZD0234
+ + pack of eight 1K resistors: RR0572
+ + chisel tips for my soldering (TS1640) station: TS1644
+ + a socket for the oscillator: PI6454
+
+I even found a spare pushbutton, my 555s and my existing timer, plus a ZIF
+socket and a socket for the ZIF socket! I should wait for the 74LS469s to
+arrive from UTsource as these are apparently Skinny DIPs, so I might get the
+wrong sockets if they turn out not to be skinny.
+
+I just had a look at my ACWJ compiler. There's an assumption in the code
+generator that each register can hold the largest type. I'll need to break
+that assumption as I don't want to have to copy around four bytes at a time
+just to copy a `char` or an `int`. I might have to pass in the type of each
+register as well as the register numbers themselves.
+
+## Sun 24 May 20:07:29 AEST 2020
+
+I think it's even worse. The compiler assumes registers, but if I do, e.g.
+
+```
+  int a, b=2, c=3; a= b + c;
+```
+
+Then I should be able to do it directly on the memory location and I won't
+need "in-memory registers" to hold the final `b+c` value before it's copied
+to `a`. So I might have to rejig the generic code generator, too.
+
+However, on another note I've been annoyed that `csim` doesn't let me paste
+in text when running with a pseudo-tty. I just worked out a solution:
+
+```
+use IO::Pty;
+use Term::ReadKey;
+
+# By default, UART I/O goes to STDIN/OUT
+my $IN  = *STDIN;
+my $OUT = *STDOUT;
+
+# Read and return one character from the terminal
+sub readterm {
+    my $ch, $cnt;
+
+    while (1) {
+        $cnt = sysread( $IN, $ch, 1 );
+
+        #print("Got cnt $cnt\n");
+        return ($ch) if ( $cnt == 1 );
+    }
+}
+
+...
+    # Open up a pty
+    if ( $ARGV[0] eq "-p" ) {
+        $OUT = new IO::Pty;
+        $IN  = $OUT;
+        print( "pty is ", $OUT->ttyname(), "\n" );
+        shift(@ARGV);
+        next;
+    }
+
+...
+ReadMode( 'cbreak', $IN );
+
+...
+    # Input from UART
+    $databus = ord( readterm() );
+
+...
+    # Output to UART
+    print( $OUT chr($databus) ); $| = 1;    # Flush the output
+```
+
+I did this in the CSCvon8 `csim`, and I'll add it also to the FISC `csim`.
+
+## Sun 24 May 22:20:03 AEST 2020
+
+I had this **really** crazy idea. Imagine that there was a second pair
+of address registers, DRhi/DRlo as well as the existing ARhi/ARlo.
+Imagine that they could *increment* as well as load (like the PC).
+
+Given the above, we could write these instructions:
+
+### addw $DDDD, $SSSS
+
+Add a 16-bit value from `$SSSS` to `$DDDD`. Microcode:
+
+  0. Load IR
+  1. Load ARlo, clear carry
+  2. Load ARhi
+  3. Load B from Mem [AR]
+  4. Load DRlo
+  5. Load DRhi
+  6. Oreg= Mem[DR]+B, save carry
+  7. Mem[DR]= Oreg, increment AR
+  8. Load B from Mem [AR], increment DR
+  9. Oreg= Mem[DR]+B (with saved carry)
+ 10. Mem[DR]= Oreg, reset uSeq counter
+
+The instruction would be 5 bytes long and take 10 microinstructions.
+If we had to use byte instructions, we'd have to do:
+
+```
+   mov b, $SSSS
+   add $DDDD, b		# Zeroes the carry in microcode
+   mov b, $SSSS+1
+   adc $DDDD+, b	# Add with carry
+```
+
+That's 12 bytes long and `5+6+5+6=22` microinstructions: significantly
+longer in time and space. Hmm. I'm liking this. We would have to
+replace the two 74HCT574 SOIC AR chips with four 74LS593 DIP chips.
+More space on the PCB required.
+Digikey sells SN74LS593DWR SOIC-20 for $20 each. Element 14 doesn't
+sell them. Mouser (X-On) in quantities of 4,000+ only.
+
+What this would mean is that the design would have both 8-bit and
+16-bit instructions. Maybe I should completely hide the A and B
+registers?
+
+We have enough spare decode outputs to make this work, I think. I'd
+have to sit down and make sure it was possible. Maybe I should do
+this idea as FISC2? I've forked a copy of FISC to do this.
+
+## Tue 26 May 13:46:41 AEST 2020
+
+The 74LS469s arrived from Utsource and they are the correct footprints
+for the PCB. So essentially there is nothing stopping me from ordering
+the PCB from JLCPCB. OK: I've ordered five PCBs, here we go!

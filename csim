@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Term::ReadKey;
-#use IO::Pty;
+use IO::Pty;
 use Storable;
 
 # FISC Simulator, (C) 2020 Warren Toomey, GPL3
@@ -120,6 +120,18 @@ my @ALUop = (
     "A-1",
     "~A",
 );
+
+# Read and return one character from the terminal
+sub readterm {
+    my ($ch, $cnt);
+
+    while (1) {
+        $cnt = sysread( $IN, $ch, 1 );
+
+        #print("Got cnt $cnt\n");
+        return ($ch) if ( $cnt == 1 );
+    }
+}
 
 # Function to set the terminal back to normal
 sub restore_terminal {
@@ -238,18 +250,8 @@ while (1) {
 		($dbuswrop == Awrite) ? $A :
 		($dbuswrop == Owrite) ? $Oreg : 0 ;
 
-  # Read from UART. Wait up to 0.5 seconds,
-  # and if no character, "read" a NUL character.
-  if ($dbuswrop == UARTwrite) {
-    # Return 0 if they were silly enough to read when nothing is there.
-    # Empty the buffer regardless.
-    $databus = defined($inchar) ? ord($inchar) : 0;
-
-    # Only reset $inchar if there is a reader on the data bus. This
-    # allows UARTRESULT to be asserted for several microinstructions
-    # before the actual read is done.
-    $inchar= undef if ($dbusrdop);
-  }
+  # Read from UART. Wait up to 0.5 seconds.
+  $databus = ord( readterm() ) if ($dbuswrop == UARTwrite);
 
   if ($debug && $dbuswrop) {
     printf("ADhi %04x => ", $address) if ($dbuswrop == ADhiwrite);
@@ -356,28 +358,6 @@ while (1) {
     if ($jumpop==5 && $notnnotz) {
       $tempPC= $address;
       printf("=> %04x", $address) if ($debug);
-    }
-    
-    # If the instruction is testing for an available UART character to
-    # read and we have one, don't jump. If not, try to read one and
-    # jump if that fails. If we read one, put it in the $inchar buffer.
-    if ($jumpop==7 && !defined($inchar)) {
-
-      # This code if we are reading from a terminal
-      if (-t $IN) {
-        $inchar= ReadKey(0.5, $IN);
-      } else {
-        # This code for files and pipes
-        $inchar= getc($IN);
-        printf("File/pipe read %02x ",
-		(defined($inchar) ? ord($inchar) : 0xff)) if ($debug);
-      }
-
-      # There was no character to read
-      if (!defined($inchar)) {
-        $tempPC= $address;
-        printf("=> %04x", $address) if ($debug);
-      }
     }
   }
 
