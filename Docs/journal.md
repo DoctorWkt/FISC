@@ -1231,3 +1231,38 @@ this idea as FISC2? I've forked a copy of FISC to do this.
 The 74LS469s arrived from Utsource and they are the correct footprints
 for the PCB. So essentially there is nothing stopping me from ordering
 the PCB from JLCPCB. OK: I've ordered five PCBs, here we go!
+
+## Wed 27 May 14:33:11 AEST 2020
+
+![](Figs/debounce.gif)
+
+I built the above circuit which came from
+[www.zen22142.zen.co.uk/Circuits/Switching/debounce.htm](www.zen22142.zen.co.uk/Circuits/Switching/debounce.htm)
+on a breadboard:
+
+![](Figs/debounce_bboard.jpg)
+
+It works. There is a wire between pins 6 and 7. That's the fuzzy blue
+wire sticking up. I didn't have a 1.8M resistor so I replaced the
+10nF caps on the right with 22nF caps. That should be giving me a 22ms
+clock pulse. Now I need to build it on a small piece of stripboard
+with the same pinouts as the oscillator. Here's the layout:
+
+![](Figs/debounce_strip.png)
+
+It's going to be 10 by 8 holes in dimensions. No, I can get it
+down to 9 by 8 holes:
+
+![](Figs/debounce_strip2.jpg)
+
+The three connections between adjacent tracks can be done with three solder bridges.
+
+## Thu 28 May 08:03:16 AEST 2020
+
+I built and tested the debounce circuit last night:
+
+![](Figs/debounce_made.jpg)
+
+and I used spare resistor legs instead of solder bridges. It works, once I
+put in a couple of missing wires. So now I have a single-step clock pulse
+circuit.
