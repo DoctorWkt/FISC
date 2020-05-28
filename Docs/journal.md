@@ -1265,4 +1265,21 @@ I built and tested the debounce circuit last night:
 
 and I used spare resistor legs instead of solder bridges. It works, once I
 put in a couple of missing wires. So now I have a single-step clock pulse
-circuit.
+circuit. I also tried out the DS1233 reset device and it works fine. It's
+very sensitive to changes on the power supply! I have two fly leads coming
+out of my USB cable to two pins, and if I move them too much on the breadboard
+the reset line goes low.
+
+I've also tried out the 74LS469 up/down counter:
+
+![](Figs/74LS469_test.jpg)
+
+and it works as advertised. I've got ~OE wired low to see the output. On
+the bottom-right, ~CBI is wired low to test the counting. The top-right
+brown wire is ~LD, wired high to allow counting. I've got eight data input
+bits wired (for load testing). The top-left red wire is ~UD, currently
+wired low for counting up.
+
+I'm now at the point where I'm waiting for the PCB to arrive. I've bought
+a small kit with some SMD components, so I can learn some SMD soldering
+skills.
