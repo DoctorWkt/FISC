@@ -1388,6 +1388,8 @@ and see a hex value.
 
 ## Wed 10 Jun 22:04:08 AEST 2020
 
+![](Figs/wide_test_clip.jpg)
+
 Hah, I've found a solution for the test clip. I've removed the centre hinge
 and spring. I've cut up an old pencil eraser to the right width and put
 some above and below the old hinge point. Now the clip is the correct width
