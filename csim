@@ -162,7 +162,7 @@ while (@ARGV > 0) {
 
 # Set the UART up to read one char at a time,
 # and ensure that we restore it if signals arrive
-ReadMode('cbreak', $IN);
+ReadMode('cbreak', $IN) if (!$debug);
 $SIG{INT}  = \&restore_terminal;
 $SIG{TERM} = \&restore_terminal;
 $SIG{PIPE} = \&restore_terminal;
@@ -213,11 +213,9 @@ while (1) {
   $usreset=  1- (($uinst>>USSHIFT) & USRESET);		# Active low
   $jumpena=  ($dbusrdop == Jmpena);
   $pcincr=   ($stackop == PCincr);
-  printf("PC %02x%02x IR %02x uinst 0x%04x ", $PChi, $PClo, $IR, $uinst)
-								if ($debug);
-  #printf("\talu %02x jmp %x dw %x aw %x dr %x stk %x us %x je %x pc %x\n\t\t",
-  #	$aluop, $jumpop, $dbuswrop, $abuswrop, $dbusrdop, $stackop,
-  #	$usreset, $jumpena, $pcincr) if ($debug);
+  printf("PC %02x%02x IR %02x ", $PChi, $PClo, $IR) if ($debug);
+  printf("decode %x%x%x%x%x%x ", $usreset, $stackop,
+	$dbusrdop, $abuswrop, $dbuswrop, $aluop) if ($debug);
 
   # Update the stack pointer
   if ($stackop == Stkincr) {

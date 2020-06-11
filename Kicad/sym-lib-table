@@ -7,4 +7,5 @@
   (lib (name Memory_EPROM)(type Legacy)(uri /home/wkt/ownCloud/FISC/Kicad/lib_sch/Memory_EPROM.lib)(options "")(descr ""))
   (lib (name 74LS593)(type Legacy)(uri /home/wkt/ownCloud/FISC/Kicad/lib_sch/74LS593.lib)(options "")(descr ""))
   (lib (name DS1233)(type Legacy)(uri /home/wkt/ownCloud/FISC/Kicad/lib_sch/DS1233-10+.lib)(options "")(descr ""))
+  (lib (name FISC-rescue)(type Legacy)(uri ${KIPRJMOD}/FISC-rescue.lib)(options "")(descr ""))
 )

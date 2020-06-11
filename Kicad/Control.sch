@@ -587,14 +587,10 @@ Text GLabel 9000 2750 0    50   Input ~ 0
 Hi
 Text GLabel 9000 2850 0    50   Input ~ 0
 Lo
-Text GLabel 9000 2950 0    50   Input ~ 0
-Clk
 Wire Wire Line
 	9000 2750 9150 2750
 Wire Wire Line
-	9000 2850 9150 2850
-Wire Wire Line
-	9000 2950 9150 2950
+	9000 2850 9050 2850
 Text GLabel 10450 2350 2    50   Output ~ 0
 ~ADhiwrite
 Text GLabel 10450 2450 2    50   Output ~ 0
@@ -953,8 +949,6 @@ Wire Wire Line
 	4050 5700 5150 5700
 Wire Wire Line
 	4050 5600 5050 5600
-Text Notes 10350 3050 0    50   ~ 0
-Outputs are high\nuntil Clk goes low
 Text Notes 2450 6150 0    50   ~ 0
 Outputs are high\nuntil Clk goes low
 Text Notes 6450 1150 0    50   ~ 0
@@ -979,6 +973,14 @@ Text Notes 7350 3350 2    50   ~ 0
 PC\nIncrement
 Text GLabel 6550 4300 0    50   Input ~ 0
 Lo
+Text GLabel 6500 3400 0    50   Input ~ 0
+Lo
+Wire Bus Line
+	2750 3500 2750 4300
+Wire Wire Line
+	9150 2950 9050 2950
+Wire Wire Line
+	9050 2950 9050 2850
 Wire Wire Line
 	2350 4400 2850 4400
 Wire Wire Line
@@ -988,11 +990,10 @@ Wire Wire Line
 Wire Wire Line
 	2350 4300 2850 4300
 Wire Bus Line
-	2750 3500 2750 4300
-Wire Bus Line
 	1050 750  1050 2400
 Wire Bus Line
 	2950 1900 2950 4400
-Text GLabel 6500 3400 0    50   Input ~ 0
-Lo
+Connection ~ 9050 2850
+Wire Wire Line
+	9050 2850 9150 2850
 $EndSCHEMATC

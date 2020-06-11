@@ -2,7 +2,7 @@
 # Make compile to test the compiler.
 
 all: alu.rom ucode.rom
-	chmod +x cas csim
+	chmod +x cas csim clc
 
 run: instr.rom ucode.rom alu.rom
 	./csim

@@ -1283,3 +1283,190 @@ wired low for counting up.
 I'm now at the point where I'm waiting for the PCB to arrive. I've bought
 a small kit with some SMD components, so I can learn some SMD soldering
 skills.
+
+## Fri 29 May 17:20:54 AEST 2020
+
+The ["heART" SMD
+kit](https://proto-pic.co.uk/product/heart-pendant-education-stem-educational-soldering-product/)
+arrived today and I've just soldered it up.  I destroyed one LED in
+the process, and the capacitor isn't completely flat to the board,
+but the kit works. I had to wick solder away twice during the build,
+but overall I found it not bad at all.
+
+## Sun  7 Jun 19:16:05 AEST 2020
+
+I've been working on FISC2, but the PCB boards arrived during the week.
+Before we went away on Friday, I'd soldered in the UART and oscillator
+sockets, the reset device and the caps. The the microsequence counter.
+And ... it didn't work!!!
+
+We got back today and I had a chance to debug it. And damn!! I'd soldered
+in a 74HCT151 *instead* of a 74HCT161 for the counter. Argh. And I can't
+get the '151 off the PCB.
+
+So, moral of story: check, check, check. I'll have to order another '151
+and also learn how to remove SOIC devices from a PCB. At least I have
+the FISC2 components to keep going, plus four more PCBs. But it's a big
+step backwards.
+
+## Mon  8 Jun 20:31:13 AEST 2020
+
+This afternoon I used a new PCB and rebuilt up to where I thought I'd
+arrived last week. With the correct counter device, yes we are seeing
+the microsequencer counting from 0 to 15 on each clock cycle. The reset
+line also works and resets the counter to zero.
+
+Next will be the PC, the instruction ROM and the decode ROM, plus the
+... well, actually all the control line demuxers and the IR as well!
+This will allow me to `out 'H'; out 'i'` without the ALU or registers.
+
+## Tue  9 Jun 09:54:02 AEST 2020
+
+I've got the *MiniPro* ROM burner out and I've found my old ROM burning
+scripts. The new instruction ROM is an AT28C64B so I've changed the `iread`
+and `iwrite` scripts to reflect this. I've burned an instruction ROM that has:
+
+```
+	out 'F'; out 'I'; out 'S'; out 'C'
+	out ' '; out 'C'; out 'P'; out 'U'
+	out '\n'
+	jmp $0000
+```
+
+This doesn't need SP, AR, A, B, O, Carry or the CPU, but it does need the
+Decode ROM and the control line demuxers. I'm currently erasing the Decode
+ROM and I'll burn it soon.
+
+I had problems with the Decode ROM. The MiniPro gives a chip-ID mismatch
+and fails to write, but after a few reads the chip-ID mismatch goes away.
+Then I did a write which failed. But I've done a subsequent read (no
+mismatch) and the contents match the ROM file. So I had to assume the
+Decode ROM is OK.
+
+## Tue  9 Jun 16:30:08 AEST 2020
+
+I've done the soldering and into the testing. The PC is counting fine.
+The uSeq is bering reset fine. I can see the `out` opcode and the ASCII
+characters on the data bus. However ...
+
+The IR isn't being loaded with the `1A` value for `out`. I can see the
+`1A` on the input side of the chip, but what comes out is all ones except
+one bit. I can also see that the data bus seems to have lots of ones on it
+just as the clock pulse goes high. I don't know what is writing to the
+data bus. Looks like I'll have to do some logic analysing.
+
+## Wed 10 Jun 11:31:25 AEST 2020
+
+I got the logic probe yesterday in the mail. Here's a summary. It seems like
+the UART is the thing putting bogus stuff on the data bus. I've checked the
+wiring and it seems identical to CSCvon8.
+
+I was going to try my DSLogic Pro, but I can't work out a way to attach the
+fly leads to the pin sockets that I have. The sockets are circular. I have
+some pin headers but they are square and don't fit. And the fly leads have
+pin sockets which fit the pin headers. So I'm stuck.
+
+I got most of the way through building a colour-coded 16-bit LED array
+for the decode logic output, but not done yet.
+
+## Wed 10 Jun 16:06:25 AEST 2020
+
+I got the LED array done. The greens are too dark. I also worked out a
+solution for the pin sockets. I've used another pin socket and soldered
+in short pieces of breadboard wires. So I can connect the Logic Pro fly
+leads to the wires that are jutting out.
+
+I wanted to monitor the IR value but I can't. The SOIC is too small.
+And the Decode ROM is too wide to get my DIP-20 test clip across it :-(
+I can monitor the decode lines. For the first few microinstructions,
+the `DbWr` lines stay at 0. The `DbRd` lines alternate 0, 9, 0, 9.
+It seems to be loading the IR (9) and then doing a NOP immediately.
+I should have monitored the `uSreset` line too, but I forgot.
+
+I wished that DSView could group lines, so I could group all the `DbRd` lines
+and see a hex value.
+
+## Wed 10 Jun 22:04:08 AEST 2020
+
+Hah, I've found a solution for the test clip. I've removed the centre hinge
+and spring. I've cut up an old pencil eraser to the right width and put
+some above and below the old hinge point. Now the clip is the correct width
+and I have a rubber band on the outside to squeeze it in. I haven't tried
+it yet, but it's ready for tomorrow.
+
+The only drawback is that the decode ROM output pin header is too close to
+the ROM, so I can get at the IR input (now), but not all of the ROM output
+pins.
+
+What I want to know is what opcode values are being loaded by the IR. Also,
+why is the microsequencer being reset every second microinstruction when
+the `out` instruction should have three microinstructions.
+
+## Thu 11 Jun 09:06:57 AEST 2020
+
+Results so far. The IR (not always) loads with `1A` with `IRload` high
+before the first clock tick. As the clock rises, `IRload` drops with
+IR having the value `1A`.
+
+First clock tick falling edge: `UARTread` falls, to tell the UART to read
+from the data bus.
+
+Second clock tick rising edge: `UARTread` rises, `uSreset` falls. Nothing
+(that I'm monitoring) changes on the falling edge.
+
+Third clock tick rising edge: The address bus is $0001 and the data bus is
+$1A before the rising edge. `uSreset` and `IRload` rise on the rising edge.
+The IR value stays at $1A.
+
+However ... on the 3rd clock tick falling edge: `IRload` remains high,
+I can see $1A on the data bus LEDs, but I'm seeing the IR load value $00.
+I'm wondering if this means the data bus value is changing when the clock
+drops. That's the only thing that I can think of.
+
+Ok. I'm looking at the schematic now. I have the databus demux wired up
+so that it only outputs a value when the clock is *low*. But that doesn't
+make sense: we want the data bus to stabilise when the clock is high,
+and remain stable once the clock goes low. So, I think there's no need for
+the clock to go into this demux. In CSCvon8, the databus writer demux is
+wired always on. OK, so I think that's my problem. So, pin 4 has to be
+disconnected from the clock and wired low like pin 5. I'll need to lift
+the pin up and solder it to its neighbour.
+
+## Thu 11 Jun 13:55:33 AEST 2020
+
+That was a pain but I did it. I cut the bottom of the leg off, then spent
+ages trying to get it out and stop the pad from soldering to the top half.
+Anyway, I've just run my first instructions to print:
+
+```
+    FISC CPU
+```
+
+However, the `jmp` instruction isn't being taken and it seems to go on to
+`nop` land. But I'm so relieved that this works! Time to fix the schematic.
+Both FISC and FISC2 schematics now fixed.
+
+It could be that, as I haven't soldered in the AR yet, there is nothing on
+the data bus to load and so the PC keeps what it already has got. Or there
+could be a timing issue with the `~PCload` line.
+
+## Thu 11 Jun 14:36:33 AEST 2020
+
+Well, I've installed the AR chips and the effect is the same. So there must
+be a timing issue on the `~PCload` line. Sometimes the jump is taken,
+but sometimes not.
+
+Ah, I think I worked out the problem. To do a jump, we need the ALU to
+produce the `Zout` line. Hmm, looks at the PCB: I can't see an ALU
+anywhere! That could explain why this is intermittent!
+
+I hot wired pin hole 17 on the ALU footprint high. Now I'm seeing
+`~PCload` and now it's taking the jump! Yay.
+
+## Thu 11 Jun 16:43:15 AEST 2020
+
+I've just burned the ALU ROM and soldered on the ALU ROM socket. Now the
+fun part of trying to insert the ROM without bending any pins! Surprisingly,
+this was easy, it went straight in with just one pin needing some
+encouragement. And, yes, the `jmp` now works fine. I've taken a video
+and put a GIF snippet of it up on Twitter.

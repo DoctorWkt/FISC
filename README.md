@@ -34,9 +34,9 @@ At present, I have:
 
 ## Status of the CPU
 
-**late-May, 2020**: Both the Perl simulator and the Verilog model work
-well. I've settled on the hardware design and done the schematic and
-the PCB layout. I've checked the schematic for mistakes. I am happy with
-the PCB layout. I've ordered the PCBs and the components.
+**mid-June, 2020**: The PCBs have arrived and I've soldered on about
+two thirds of the components. So far, only one wiring mistake. The
+CPU can output data from the ROM to the UART and loop. Next will be
+the registers and the RAM.
 
 For more detail on progress, you can read my [journal](Docs/journal.md).
