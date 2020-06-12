@@ -1472,3 +1472,82 @@ fun part of trying to insert the ROM without bending any pins! Surprisingly,
 this was easy, it went straight in with just one pin needing some
 encouragement. And, yes, the `jmp` now works fine. I've taken a video
 and put a GIF snippet of it up on Twitter.
+
+## Fri 12 Jun 07:57:20 AEST 2020
+
+I've soldered in A, B, Carry and O registers this morning, now trying to
+run example01.s. I'm seeing "Hello world" which confirms that the A register
+is working. But instead of the '!' at the end which is $10 + $11 done
+with the ALU, I'm seeing 'Q' instead. That's $51 instead of $21.
+
+I've written a new program to add A and B with 48 values. Here is what it
+should do:
+
+```
+00000000  20 21 22 23 24 25 26 27  28 29 2a 2b 2c 2d 2e 2f  | !"#$%&'()*+,-./|
+00000010  30 31 32 33 34 35 36 37  38 39 3a 3b 3c 3d 3e 3f  |0123456789:;<=>?|
+00000020  40 41 42 43 44 45 46 47  48 49 4a 4b 4c 4d 4e 4f  |@ABCDEFGHIJKLMNO|
+```
+
+and here is what I'm seeing:
+
+```
+00000000  50 51 52 53 54 55 56 57  68 69 6a 6b 6c 6d 6e 6f  |PQRSTUVWhijklmno|
+00000010  70 71 72 73 74 75 76 87  88 89 8a 8b 8c 8d 8e 8f  |pqrstuv.........|
+00000020  70 71 72 73 74 85 86 87  88 89 8a 8b 8c 8d 8e 8f  |pqrst...........|
+```
+
+The low four bits are OK. I thought there might be a solder bridge somewhere,
+but I see in the middle:
+
+```
+53 54 55 56 57 68 69	57 then 68
+73 74 75 76 87 88 89	76 then 87
+73 74 85 86 87 88 89	74 then 85
+```
+
+and that seems to indicate more of a bug in the ALU results. I might write
+code to simply `out` both A and B registers to show that they are OK.
+
+Here is what I see. The A register seems fine:
+
+```
+a!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+a!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+```
+but the B register output is wrong:
+
+```
+b!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+  rqrstuvwxyz{|}~pqrstuvwxyz{|}~PABCTUVWXYZ[\]^_PABSTUVWXYZ[\]^_`
+```
+
+But this has to go through the ALU to get to the UART. I might now
+try sending A through the ALU to do the same. I'll do a `clc` then a
+`cinc` to send A through the ALU and store it back in the A register.
+Then I'll output A on the UART. This produces:
+
+```
+a!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+```
+
+so I have to assume that the O register is OK and it's looking
+more likely to be the B register.
+
+## Fri 12 Jun 11:00:56 AEST 2020
+
+I wrote a program to raise each individual bit on the B register, and
+monitored the ALU inputs for the B value. Looks like bit 6 is stuck high
+and bits 3 and 4 are tied together.
+
+I've checked the soldering and I did a continuity test. Bit 6 isn't
+somehow connected to Vcc. Bits 3 and 4 are not bridged. There is continuity
+from the B register to the ALU. I can see the correct values on the data bus
+going in to the B register, but incorrect values are coming out.
+
+Well, colour me surprised. I did a solder dewick on both sides of the
+B register "just in case", and now it's working. All eight individual
+bits are coming out fine! Now to try outputting B to the UART.
+
+I've tried example03, the conditional jumps and it's all fine. Example 5,
+copying B to A, works.
