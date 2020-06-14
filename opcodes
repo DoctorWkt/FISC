@@ -65,5 +65,9 @@
 47 3 mov_sp_word
 48 3 mov_sp+word_a
 49 2 mov_a_sp+byte
+4a 1 mov_a_sp
+4b 1 mov_sp_a
+4c 1 dec_sp
+4d 1 inc_sp
 50 1 rts
 60 3 jmp_word

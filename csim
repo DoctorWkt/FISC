@@ -213,7 +213,7 @@ while (1) {
   $usreset=  1- (($uinst>>USSHIFT) & USRESET);		# Active low
   $jumpena=  ($dbusrdop == Jmpena);
   $pcincr=   ($stackop == PCincr);
-  printf("PC %02x%02x IR %02x ", $PChi, $PClo, $IR) if ($debug);
+  printf("PC %02x%02x u%x IR %02x ", $PChi, $PClo, $phase, $IR) if ($debug);
   printf("decode %x%x%x%x%x%x ", $usreset, $stackop,
 	$dbusrdop, $abuswrop, $dbuswrop, $aluop) if ($debug);
 
@@ -251,7 +251,7 @@ while (1) {
   # Read from UART. Wait up to 0.5 seconds.
   $databus = ord( readterm() ) if ($dbuswrop == UARTwrite);
 
-  if ($debug && $dbuswrop) {
+  if ($debug) {
     printf("ADhi %04x => ", $address) if ($dbuswrop == ADhiwrite);
     printf("ADlo %04x => ", $address) if ($dbuswrop == ADlowrite);
     printf("Mem[ %04x ] => ", $address) if ($dbuswrop == MEMwrite);

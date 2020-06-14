@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-# CSCVon8 microcode generator, (C) 2019 Warren Toomey, GPL3
+# FISC microcode generator, (C) 2020 Warren Toomey, GPL3 
 #
 # Generate the ucode.rom from the microcode text file,
 # and create the opcodes file. Also generate a ROM file,
@@ -19,8 +19,19 @@ my %Cislow;
 # Hash of previously seen opcodes
 my %Opcode;
 
+# Hash of previously seen opnames
+my %Opname;
+
 # Bitmask to set all active low lines off
 my $lowoffmask=0;
+
+# Hash of control lines to be asserted by default,
+# and hash of hashes for lines to deassert if named.
+# Also a HoH which is true when two lines are
+# mutually exclusive.
+my %Assert;
+my %Deassert;
+my %Mutex;
 
 # The ROM to write out
 my @ROM;
@@ -43,12 +54,44 @@ my $linenum=0;
 # word, and update the ROM with the microinstruction
 sub parse_lines {
   my ($input, $inscode, $insname)= @_;
+  my @allnames;
   print("Parsing $input\n") if ($debug==2);
+  die("Too many uinstructions on line $linenum\n") if ($seq == 16);
 
+  # Build a hash with any lines to assert by default
+  my %line;
+  foreach my $l (keys(%Assert)) {
+    $line{$l}= 1;
+  }
+
+  # Build a list of control lines named on the input
+  push(@allnames, split(m{\s+}, $input));
+
+  # Check that none are mutually exclusive
+  foreach my $i (0 .. scalar(@allnames)-1) {
+    foreach my $j ($i+1 .. scalar(@allnames)-1) {
+    die("$allnames[$i] conflicts with $allnames[$j] on line $linenum\n")
+      if (defined($Mutex{ $allnames[$i] }{ $allnames[$j] }));
+    }
+  }
+  
+
+  # Now add in the lines on the input, deasserting
+  # any that were already asserted
+  foreach my $l (split(m{\s+}, $input)) {
+    $line{$l}= 1;
+    next if (!defined($Deassert{$l}));
+    foreach my $deline (keys(%{ $Deassert{$l} })) {
+      delete $line{$deline};
+      print("  Deasserting $deline because of $l\n") if ($debug==2);
+    }
+  }
+
+  # We now have a list of lines to assert.
   # Start with all lines off
   my $result= $lowoffmask;
 
-  foreach my $name (split(m{\s+}, $input)) {
+  foreach my $name (keys(%line)) {
 
     die("Unrecognised line $name on line $linenum\n")
 	if (!defined($Cline{$name}));
@@ -124,9 +167,12 @@ while (<$IN>) {
 
       # Get the new opcode number, name and list of control lines
       my $newopcode= $1; my $newopname= $2; my $linelist=$3;
-      print("$newopcode $newopname:\n") if ($debug==2);
+      print("\n$newopcode $newopname:\n") if ($debug==2);
       die("Opcode $opcode redefined on line $linenum\n")
 				if (defined($Opcode{$opcode}));
+      die("Opname $newopname redefined on line $linenum\n")
+				if (defined($Opname{$newopname}));
+      $Opname{$newopname}= 1;
 
       # Print out the details of the last opcode
       printf($OPOUT "%02x %d %s\n", $opcode, $instrlen, $opname) if ($seq!=0);
@@ -139,6 +185,32 @@ while (<$IN>) {
 
       # Parse the control lines
       parse_lines($linelist, "", ""); next;
+    }
+
+    # A control line which needs to be asserted by default
+    if (m{^assert\s+(\S+)\s+unless\s+(.+)}) {
+      my @allnames;
+      my ($aline, $others)= ($1, $2);
+      push(@allnames, $aline);
+      die("Asserted control line $aline redefined on line $linenum\n")
+		if (defined($Assert{$aline}));
+      $Assert{$aline}= 1;
+
+      # Split the list of others and add $aline to each as a
+      # line to deassert
+      foreach my $l (split(/\s+/, $others)) {
+	$Deassert{$l}{$aline}=1;
+        push(@allnames, $l);
+      }
+
+      # In @allnames we have all the control line names which are mutually
+      # exclusive. Add these to the %Mutex hash
+      foreach my $i (0 .. scalar(@allnames)-1) {
+        foreach my $j ($i+1 .. scalar(@allnames)-1) {
+	  $Mutex{ $allnames[$i] }{ $allnames[$j] }= 1;
+        }
+      }
+      next;
     }
 
     # If we get here, the line must just be a list of control lines.

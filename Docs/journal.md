@@ -1551,3 +1551,214 @@ bits are coming out fine! Now to try outputting B to the UART.
 
 I've tried example03, the conditional jumps and it's all fine. Example 5,
 copying B to A, works.
+
+## Fri 12 Jun 18:17:07 AEST 2020
+
+Next up, the RAM chip. I've installed the socket and the RAM. Here's my
+test program:
+
+```
+	mov $8000, 'H'; mov a, $8000; out a
+	mov $8001, 'e'; out $8001
+	mov $8002, 'l'; out $8002
+	mov a, $8002; out a
+	mov a, 'o'; mov $8003, a; out $8003
+	out '\n'; jmp $ffff
+```
+
+which should print out:
+
+```
+00000000  48 65 6c 6c 6f 0a                                 |Hello.|
+```
+
+```
+00000000  ff 67 6e 6e 6f 0a                                 |.gnno.|
+```
+
+So I'll have to single step this and see what is going on.
+
+## Fri 12 Jun 18:57:41 AEST 2020
+
+It gets stranger. I think it must be the Carry not being cleared, as
+now I see:
+
+```
+Ifmmo, not
+Hello
+```
+
+The `mov` instruction clears the carry and does `A+0` to temporarily store
+the byte before putting it into the RAM. That explains the up-by-one values.
+However, when I preface the `mov` instructions with `clc`, I see:
+
+```
+Gdkko
+```
+
+which is now down-by-one! I can't explain that. So I should inspect the
+Carry flag's value and see what's going on.
+
+## Sat 13 Jun 09:35:08 AEST 2020
+
+I've written the mov_word_byte to load the A register with the byte data
+and write that into memory. This will eliminate the ALU from the operation.
+If this works, I think I can confirm that the RAM is working. Then I can
+concentrate on the ALU and the Carry flag. Just waiting the 10 minutes to
+erase the Decode ROM.
+
+OK, I'm running with the changed Decode ROM and `Hello` is being printed
+out. That confirms that Memory seems to be working fine. I also dewicked
+and resoldered the Carry chip to see if that will help. Now I should do
+some tests. Here is one:
+
+```
+# Carry clear, prints 'A'
+        clc; mov a, $20; mov b $21; add a, b; out a
+
+# Set the carry
+        mov a, $FF; mov b $10; add a, b
+
+# Carry set, prints 'B'
+        mov a, $20; mov b $21; add a, b; out a
+```
+
+and this works fine. So maybe I've fixed the Carry problem? More tests.
+
+The first part of example 4 works:
+
+```
+        mov a, 'e'
+        mov $8002, a
+        mov a, $00
+        mov b, $02
+        mov a, $8000+b          # Access $8002
+        out a
+```
+
+But the second part doesn't.
+
+## Sun 14 Jun 09:06:06 AEST 2020
+
+I was reading up on D flip-flop "ripple through", where the output follows input while clock is high. But
+then I read that for edge-triggered D flip-flops, the new value is latched only when the clock changes, not
+continuously afterwards. I think I'm going to have to do some logic analysis on the carry operation.
+
+Here's the next test code:
+
+```
+# Clear carry, do an add with no carry
+	clc; mov b, 'D'; mov a, $00; add a, b; out a
+# Clear carry, do an add with a carry
+	clc; mov a, $FF; add a, b; out a
+	out '\n'; jmp $ffff
+```
+
+Here is what `csim` does on the second add, and I'm seeing:
+
+```
+PC 000b u1 IR 20 decode 02b040 Areg => dbus ff B 44 A+B 6943 C NOTZ ZNNEG NNNZ 
+	Cout rises on clk, Cin rises on clkbar
+```
+
+and that seems to be fine!
+
+## Sun 14 Jun 11:40:37 AEST 2020
+
+Back to example 4 and I've worked out the problem. D'oh! I haven't soldered in the
+buffers to write ADhi and ADlo to the data bus, have I?! So that's why we can't
+do indexed addressing properly yet. I'll go do that.
+
+I've soldered on the AD buffer chips and I'm seeing the `e` output for part two
+of example 4. The only thing not on the board yet are the SP chips, even though
+the sockets are there. So time to test all but the SP operations.
+
++ example01 works
++ example03 works
++ example04 works
++ example05 works
++ example06 works
++ example12 works
+
+I can't do examples 02 or 07-10 as they depend on the stack pointer.
+Example 11 gives this:
+
+```
+CEGIKKK or
+BDFHJJJ instead of ABCDEDC
+```
+
+and there are lots of increments here, so I've probaby got my
+microcode wrong.
+
+So now it's time to plug in the SP chips and see what happens!
+
+## Sun 14 Jun 12:38:55 AEST 2020
+
+The SP chips are in. Example 02 works but ... I'm not seeing addresses $FFFF on the
+address bus. I am seeing $FEFE to start with. So this probably means that the chips
+start with an initial $FF value and not an initial $00 value. I'll need to create
+an instruction to initialise the stack pointer's value.
+
+## Sun 14 Jun 13:10:15 AEST 2020
+
+I've rewritten the Decode ROM with the new `movsp` instruction. I've tried setting the
+SP to $FFFF, $0000 and $0002 and I'm still seeing address $FEFE on the address bus for
+the first push operation. That seems to imply that the chips are not loading their
+values with the new `movsp` instruction. At least they are DIPs so I can probe them.
+
+## Sun 14 Jun 15:54:40 AEST 2020
+
+I just spent too long and got frustrated, then realised my problem. I've got the DSLogic
+Plus conected to:
+
+ + D0-3, Q0-3, SktOp0-1, SPloread, Clk, DbRd0-3
+
+I couldn't work out why I was seeing the Q (output) values change when there was no
+SPloread. I forgot that Q was connected to the data bus and so I was just seeing the
+data bus values!
+
+I'll take a step back for a bit. What I'll do is just some code to set SP and use its
+existing value, plus a simple SP++ and SP--. I'll have to write some more microcode for this.
+
+## Sun 14 Jun 22:36:44 AEST 2020
+
+I've imported the `gen_ucode` script from 2FISC as it has better error detection
+than the one here. I've added instructions to set the SP to a known value,
+load A from the SP address, write A to the SP address, increment SP and decrement
+SP. For all of these, I'm also writing the SP value out on the address bus
+so that I can see it more easily. I'm erasing the Decode ROM, so another 10 minute
+wait.
+
+Argh. So... this works fine. I think now I suspect that my 16-LED display
+for the address bus has a broken link which is why I'm seeing $FExx instead
+of $FFxx! I'm prepared to try a JSR/RTS example.
+
+
++ example08 works
++ example09 works
+
+Example 10: it mostly works but I get garbage on the UART for:
+
+```
+# Move B to memory and read it back
+        mov b, 'l';  mov $8000, b
+        mov a, $8000; out a
+
+# Push B on the stack, get it back
+        mov b, 'd'
+        push b; pop a;
+        out a
+```
+
+which could be the carry thing again. Example 11 is printing `CEGIKKK`
+instead of `ABCDEDC`: ditto.
+
+So, what doesn't work:
+
+ + example 07 fails, prints junk instead of AB
+ + example 10 fails, works partially
+ + example 11 fails
+
+All of these involve the ALU and some form of addition. So I've got things
+narrowed down somewhat.

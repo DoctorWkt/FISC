@@ -30,13 +30,12 @@ At present, I have:
  + a simple compiler, [clc](clc)
  + example assembly and higher-level programs in [Examples](Examples)
  + a Verilog design in [Verilog](Verilog)
- + an initial schematic in [Kicad/schematic.pdf](Kicad/schematic.pdf)
+ + a schematic in [Kicad/schematic.pdf](Kicad/schematic.pdf)
 
 ## Status of the CPU
 
-**mid-June, 2020**: The PCBs have arrived and I've soldered on about
-two thirds of the components. So far, only one wiring mistake. The
-CPU can output data from the ROM to the UART and loop. Next will be
-the registers and the RAM.
+**mid-June, 2020**: I've ordered PCBs and they have arrived and I've soldered
+on all the components. The CPU passes most of the tests but I have an issue
+with addition that I am still working on.
 
 For more detail on progress, you can read my [journal](Docs/journal.md).
