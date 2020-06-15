@@ -3624,8 +3624,8 @@ Now the counting part. Here is the table from the datasheet:
 The count operation depends upon both `~UD` and the "Carry/Borrow In", `~CBI`.
 When `~CBI` is high there is no counting. When `~CBI` is low:
 
-  + the register increments when `~UD` is low, or
-  + the register decrements when `~UD` is high.
+  + the counter increments when `~UD` is low, or
+  + the counter decrements when `~UD` is high.
 
 There is also a  "Carry/Borrow Out", `~CBO`. The datasheet says: two or
 more 'LS469 octal up/down counters may be cascaded to provide larger counters.
@@ -3648,7 +3648,7 @@ the datasheet:
 What the datasheet should have done was give this second truth table:
 
 ~UD  | Reg Value  | ~CBO
-----:|:----------:|:----
+:---:|:----------:|:----
   L  |  11111111  |  L
   H  |  11111111  |  H
   L  |  00000000  |  H
@@ -3657,9 +3657,9 @@ What the datasheet should have done was give this second truth table:
 
 In other words, it's the *combination* of the `~UD` and the register's
 value which controls the Carry/Borrow Out. When the lower counter is
-incrementing and the lower register's value is $FF, the lower counter's
+incrementing and the lower counter's value is $FF, the lower counter's
 `~CBO` goes low. Similarly, when the lower counter is decrementing
-and the lower register's value is $00, the lower counter's `~CBO` goes low.
+and the lower counter's value is $00, the lower counter's `~CBO` goes low.
 Otherwise, the lower counter's `~CBO` stays high.
 
 Here is the way I've wired up the two '469s for the Stack pointer in FISC:
@@ -3683,31 +3683,31 @@ both easily. Let's look at why this is the case.
 Let's go with the assumption that this truth table is accurate:
 
  StkOp1 | StkOp0 | Purpose
--------:|:------:|:---------
+:------:|:------:|:---------
    0    |    0   |  Increment the 16-bit SP
    0    |    1   |  Decrement the 16-bit SP
    1    |    0   |  Hold the SP
    1    |    1   |  Hold the SP, increment the PC
 
 Now assume that the stack pointer is currently $0000, with the lower
-register value $00 and the higher register value also $00. We want to
+counter value $00 and the higher counter value also $00. We want to
 increment the PC but retain the current stack pointer value. So we choose
 the last line in the truth table.
 
 For the lower (left) '469, this is fine. `~CBI` is high and `~UD` is high. On
-the rising clock edge, the current register value is kept.
+the rising clock edge, the current counter value is kept.
 
-However, with `~UD` being high and the register being value $00, the
+However, with `~UD` being high and the counter being value $00, the
 `~CBO` output is now low!
 
 Moving up to the higher (right) '469, we now have a problem. It's `~CBI` is low
-and `~UD` is high. On the rising clock edge, the higher '469 register's
+and `~UD` is high. On the rising clock edge, the higher '469 counter's
 value will **decrement**!
 
 What we should have done is used the third line in the truth table: set
 `StkOp0` to low. This would set `~UD` to low on both devices. The lower
 '469 will stay unchanged (as its `~CBI` is high). But with the lower
-register at $00 and `~UD` low, the lower device's `~CBO` is now *high*.
+counter at $00 and `~UD` low, the lower device's `~CBO` is now *high*.
 This means that the higher device's `~CBI` is high and so it also will
 stay unchanged.
 
