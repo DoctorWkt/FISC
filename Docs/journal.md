@@ -1797,7 +1797,7 @@ Let's review what we have.
 
 ![](Figs/74LS469.png)
 
-The 74LS5469 is an 8-bit register and up/down counter. The D lines read the
+The 74LS469 is an 8-bit register and up/down counter. The D lines read the
 new value on a rising clock edge when `~LD` is low, and the register's value
 is output on the Q lines when `~OE` is low.
 
@@ -3613,7 +3613,7 @@ Let's review what we have.
 
 ![](Figs/74LS469.png)
 
-The 74LS5469 is an 8-bit register and up/down counter. The D lines read the
+The 74LS469 is an 8-bit register and up/down counter. The D lines read the
 new value on a rising clock edge when `~LD` is low, and the register's value
 is output on the Q lines when `~OE` is low.
 
