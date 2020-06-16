@@ -3608,8 +3608,9 @@ missing a bit. I'll put the logic analyser on it later.
 
 ## Tue 16 Jun 07:02:49 AEST 2020
 
-Damn, damn, damn! I've finally worked it out (I hope), and it's not good news.
-Let's review what we have.
+I wrote up some details of the 74LS469 component and one of my conclusions
+turned out to be very wrong. So, below is (hopefully) the correct information.
+After that, I'll write about the implications for this FISC project.
 
 ![](Figs/74LS469.png)
 
@@ -3629,15 +3630,14 @@ When `~CBI` is high there is no counting. When `~CBI` is low:
 
 There is also a  "Carry/Borrow Out", `~CBO`. The datasheet says: two or
 more 'LS469 octal up/down counters may be cascaded to provide larger counters.
-So I assumed that it would be as easy as this to cascade two counters:
+This allows us to cascade two counters as follows:
 
 ![](Figs/74LS469_casc1.png)
 
 with the left device holding the lower 8 bits and the right device
 holding the higher 8 bits.
 
-What I didn't realise is the unwritten implication in these lines from
-the datasheet:
+The datasheet then goes on to say this very cryptic pair of sentences:
 
 >The carry-out (~CBO) is TRUE (~CBO == LOW) when
 >the output register (Q7 – Q0) is all HIGHs, otherwise FALSE
@@ -3647,40 +3647,60 @@ the datasheet:
 
 What the datasheet should have done was give this second truth table:
 
-~UD  | Reg Value  | ~CBO
-:---:|:----------:|:----
-  L  |  11111111  |  L
-  H  |  11111111  |  H
-  L  |  00000000  |  H
-  H  |  00000000  |  L
-  X  |  All else  |  H
+~CBI | ~UD  | Reg Value  | ~CBO | Comment
+:---:|:----:|:----------:|:----:|------
+  H  |  X   |  XXXXXXXX  |   H  | We will not inc/decrement, pass this on
+  L  |  L   |  11111111  |   L  | We will increment, so should higher counter
+  L  |  H   |  11111111  |   H  | We will decrement, next higher doesn't
+  L  |  L   |  00000000  |   H  | We will increment, next higher doesn't
+  L  |  H   |  00000000  |   L  | We will decrement, so should next counter
+  L  |  X   |  All else  |   H  | We are nowhere near a carry/borrow situation
 
-In other words, it's the *combination* of the `~UD` and the register's
-value which controls the Carry/Borrow Out. When the lower counter is
-incrementing and the lower counter's value is $FF, the lower counter's
-`~CBO` goes low. Similarly, when the lower counter is decrementing
-and the lower counter's value is $00, the lower counter's `~CBO` goes low.
-Otherwise, the lower counter's `~CBO` stays high.
+In other words, it's the *combination* of the `~CBI`, the `~UD` and
+the register's value which controls the register's Carry/Borrow Out.
+
+When the `~CBI` is high, not only will the lower counter *not* increment or
+decrement, but it will tell the higher counter not to increment or
+decrement (via the high `~CBO`).
+
+When the lower counter is incrementing (`~LD` is low) and the lower counter's
+value is $FF, the lower counter's `~CBO` goes low. Similarly, when the
+lower counter is decrementing (`~LD` is high) and the lower counter's value
+is $00, the lower counter's `~CBO` goes low. Otherwise, the lower counter's
+`~CBO` stays high.
+
+I did some breadboard testing with two cascaded '469s:
+
+![](Figs/469_breadboard.jpg)
+
+The small stripboard on the right is a clock pulse circuit with a white wire
+output going to both devices. Both 469's have their output enabled; the
+green LED shows the lower `~CBO` output. I have jumpers to manually load both
+counters with a value.
+
+The yellow wire is wired to the `~UD` on both counters, and the green wire
+is the `~CBI` for the lower counter.
+
+With `~CBI` high, the lower `~CBO` is high regardless of what counter
+value or lower `~UD` I set. Even better, with `~CBI` low, I could set the counter combination
+to $00F0 and then increment up to $00FF, then to $0100 and $0101 etc. Then
+I could alter `~UD` and decrement back down to $00F0. Ditto for crossing
+both ways around $FFFF/$0000.
 
 Here is the way I've wired up the two '469s for the Stack pointer in FISC:
 
 ![](Figs/74LS469_casc2.png)
 
-I thought `StkOp1` would act as a "Hold" control line: when high, this
-would prevent the lower (left) counter on the left from incrementing or
-decrementing. And when `StkOp1` is low, `StkOp0` would then control
+`StkOp1` acts as a "Hold" control line: when high, this
+prevents the lower (left) counter on the left from incrementing or
+decrementing. And when `StkOp1` is low, `StkOp0` controls
 the direction: low for increment and high for decrement.
 
-Assuming that I had two "Hold" values, I could demux the two `StkOp` lines
+Now that I have two "Hold" values, I can demux the two `StkOp` lines
 and use one of the four bit combinations as a `PCincr` line to increment the
 Program Counter.
 
-This assumption about the two "Hold" values turns out to be completely
-wrong. In fact, the '469 is really designed to be configured as a count-up
-device or a count-down device. It's not designed to be configured to do
-both easily. Let's look at why this is the case.
-
-Let's go with the assumption that this truth table is accurate:
+Thus, my CPU's truth table looks like:
 
  StkOp1 | StkOp0 | Purpose
 :------:|:------:|:---------
@@ -3689,57 +3709,5 @@ Let's go with the assumption that this truth table is accurate:
    1    |    0   |  Hold the SP
    1    |    1   |  Hold the SP, increment the PC
 
-Now assume that the stack pointer is currently $0000, with the lower
-counter value $00 and the higher counter value also $00. We want to
-increment the PC but retain the current stack pointer value. So we choose
-the last line in the truth table.
-
-For the lower (left) '469, this is fine. `~CBI` is high and `~UD` is high. On
-the rising clock edge, the current counter value is kept.
-
-However, with `~UD` being high and the counter being value $00, the
-`~CBO` output is now low!
-
-Moving up to the higher (right) '469, we now have a problem. It's `~CBI` is low
-and `~UD` is high. On the rising clock edge, the higher '469 counter's
-value will **decrement**!
-
-What we should have done is used the third line in the truth table: set
-`StkOp0` to low. This would set `~UD` to low on both devices. The lower
-'469 will stay unchanged (as its `~CBI` is high). But with the lower
-counter at $00 and `~UD` low, the lower device's `~CBO` is now *high*.
-This means that the higher device's `~CBI` is high and so it also will
-stay unchanged.
-
-This is all fine if all you want is a 16-bit incrementing counter, or a
-16-bit decrementing counter.
-
-+ 16-bit incrementing counter: Wire `~UD` low on both devices. Cascade
-  the lower device's `~CBO` to the higher device's `~CBI`. Use the
-  lower device's `~CBI` as an active low "increment" control line.
-+ 16-bit decrementing counter: Wire `~UD` high on both devices. Cascade
-  the lower device's `~CBO` to the higher device's `~CBI`. Use the
-  lower device's `~CBI` as an active low "increment" control line.
-
-My problem is that I want a 16-bit counter that can load, hold, increment
-*and* decrement. My mistake was to read the two "HOLD" words in the
-"Operation" column of the datasheet truth table and assume that these
-were *commands*. Actually, they are *consequences* (i.e. an output, not
-an input).
-
-There is only really one actual HOLD value that you can use and it depends on
-how you have hard-wired the `~UD` line to the two cascaded devices.
-
-There is a solution, but unfortunately (for me) it requires yet another
-chip to add to the design. Here's the solution:
-
-![](Figs/74LS469_casc3.png)
-
-`StkOp1` is now a proper "Hold" control line. When it is high, the `~CBI`
-values on both chips are high and the devices will hold their values.
-`StkOp0` is now the direction control line: low for increment, high for
-decrement.
-
-What I now need to do is to breadboard this and confirm that it works. If
-it does, I can add a 74HCT32 "dead bug" style to the PCB and use one of
-the four OR gates on the 74HCT32.
+In the next section, I will explain why my design still has a problem
+with the 74LS469 devices.
