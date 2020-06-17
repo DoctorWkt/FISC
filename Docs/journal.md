@@ -3711,3 +3711,34 @@ Thus, my CPU's truth table looks like:
 
 In the next section, I will explain why my design still has a problem
 with the 74LS469 devices.
+
+## Wed 17 Jun 10:40:38 AEST 2020
+
+So here's the problem with how I've used the 74LS469. Their loads are edge
+triggered by a clock signal, but they require `~LD` to be asserted low
+*before* the clock signal. Or at least, it's dangerous if the `~LD` line
+changes at the same time as the clock signal.
+
+I had got used to the '574 registers which have a single edge-triggered
+load line. For these, I generate a rising edge
+control line when `~Clkbar` rises in the middle of the clock cycle, and this
+is fine. For the 74LS469s, I did this:
+
+![](Figs/fisc_sp_clock.png)
+
+This is a problem. `~Clkbar` is the clock for loads and increments. But
+I'm generating the `~SPLoread` line also as a rising edge control line
+when `~Clkbar` rises. So now the '469 `~LD` rises concurrently with `CLK`:
+very bad. There is no guarantee that `~LD` will be high by the time that
+`CLK` rises. I think that this is the reason why I am trying to load $FF
+into the high byte of the stack pointer but I'm seeing $FE as the output.
+
+Unfortunately for me, I can't just alter a wire or two to fix it. What I
+need to do is to generate `~LD` in the first half of the clock cycle
+(when the system clock goes high), then let `~Clkbar` rise in the middle
+of the clock cycle.
+
+I can take this lesson and apply it to my FISC2 design. But for this
+design, I will have to live with the fact that I can't load the stack
+pointer with a new value. I should be able to increment and decrement OK,
+though. I'll do some logic analysis to confirm this.
