@@ -515,3 +515,27 @@ START := MEMwrite IRread PCincr
 	Zero ARwrite Jmpena
 	uSreset
 
+# Debug instructions
+# Get SPlo into A
+61 movasplo: SPwrite ADlowrite Aread
+	uSreset
+
+# Get SPhi into A
+62 movasphi: SPwrite ADhiwrite Aread
+	uSreset
+
+# Get ARlo into A
+63 movaarlo: ARwrite ADlowrite Aread
+	uSreset
+
+# Get ARhi into A
+64 movaarhi: ARwrite ADhiwrite Aread
+	uSreset
+
+# Get PClo into A
+65 movapclo: PCwrite ADlowrite Aread
+	uSreset
+
+# Get PChi into A
+66 movapchi: PCwrite ADhiwrite Aread
+	uSreset

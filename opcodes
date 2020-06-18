@@ -71,3 +71,9 @@
 4d 1 inc_sp
 50 1 rts
 60 3 jmp_word
+61 1 movasplo
+62 1 movasphi
+63 1 movaarlo
+64 1 movaarhi
+65 1 movapclo
+66 1 movapchi

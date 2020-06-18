@@ -3742,3 +3742,148 @@ I can take this lesson and apply it to my FISC2 design. But for this
 design, I will have to live with the fact that I can't load the stack
 pointer with a new value. I should be able to increment and decrement OK,
 though. I'll do some logic analysis to confirm this.
+
+## Thu 18 Jun 12:09:11 AEST 2020
+
+I just realised that I can copy the SPhi/SPlo values into the A register.
+So I wrote some print hex code and I ran this in `csim`:
+
+```
+23		# Print out three test
+AB		# values to show that
+9A		# prhex works
+0000		# Print SPhi/SPlo
+FFFF		# Decrement SP
+FFFE		# Decrement SP
+FFFF		# Increment SP
+0000		# Increment SP
+00		# Increment SP, crash
+```
+
+Because `prhex()` is implemented as a function, the code crashes when the
+stack pointer is above $0000, as that's pointing at the ROM of course.
+You can't `JSR` and save the return address at a ROM location!
+
+When I do this on the real hardware, I get different initial SP values:
+
+```
+23                                                                  
+23                                                                  
+AB                                                                  
+9A
+FEFE		# Starts at $FEFE
+FEFD
+FEFC
+FEFD                                                                
+FEFE                                                                
+FEFF                                                                
+FF00                                                                
+End
+```
+
+but then:
+
+```
+23
+AB
+9A
+FFFF		# Starts at $FFFF
+FFFE
+FFFD
+FFFE
+FFFF
+0000
+00		# Crash of course
+```
+
+I know it's crazy, but let's try to force a specific SP value with, e.g.,
+`mov sp, $ABCD`. Wow, it works!
+
+```
+23
+AB
+9A
+ABCD
+ABCC
+ABCB
+ABCC
+ABCD
+ABCE
+ABCF
+End
+```
+
+So, perhaps I was wrong again!! I'm using a slow 555 to run this. What
+I might do is use a faster clock, capture a few thousand runs and see
+if it is consistent. Yes, I did 3,000 runs with a faster 555 clock and it is
+consistent. I might try my 1MHz oscillator for the first time.
+
+I can't find it, so I dug out my Bitscope Micro which has a 250kHz wave
+generator. At 250kHz, the CPU loads the SP, increments and decrements fine.
+
+I then tried my 3.57MHz oscillator and got these results when it worked
+(but mostly, it just didn't work or crashed):
+
+```
+23
+AB
+9A
+FFD6
+FFD5
+FFD4
+FFD5
+FFD6
+FFD7
+FFD8
+End
+```
+
+It seems like the increment/decrement is working but the load isn't.
+So, at high clock speeds, either:
+
+ + the SP load does not occur if we change the `~LD` signal at the
+   same time as we clock the 74LS469. Or,
+ + the instruction ROM which holds the $ABCD value is too slow to
+   get it to the 74LS469 devices.
+
+Now I need an intermediate clock generator :-)
+
+## Thu 18 Jun 14:07:44 AEST 2020
+
+So ... lateral thinking time. I already have a pair of 74LS469s
+wired up on a breadboard. I can hard wire them to count up.
+If I apply the 3.57MHz clock to the low one, I get a divide by
+2, 4 etc. output on the sixteen Q outputs :-) I like the irony
+of using two 74LS469s to debug the operation of two other
+74LS469s! Will do this later.
+
+## Thu 18 Jun 20:53:19 AEST 2020
+
+Firstly, the breadboard with the 3.57Mhz clock works.
+Secondly, I used my DSLogic Plus to get the available
+clock rates (Hz or multiple):
+
+```
+ 54.61
+109.22
+218.45
+436.98
+873.78
+  1.75k
+  3.50k
+  6.99k
+ 13.98k
+ 27.96k
+ 55.93k
+111.86k
+223.71k
+446.43k
+892.86k
+  1.79M
+  3.57M
+```
+
+That last one shows that the 74LS469 devices can increment in a cascaded
+fashion at 3.57MHz, which is excellent. Hopefully tomorrow I can
+use these clock rates to see how far I can push the loading
+of the 74LS469s on the FISC PCB.
