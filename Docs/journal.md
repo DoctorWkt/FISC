@@ -3887,3 +3887,24 @@ That last one shows that the 74LS469 devices can increment in a cascaded
 fashion at 3.57MHz, which is excellent. Hopefully tomorrow I can
 use these clock rates to see how far I can push the loading
 of the 74LS469s on the FISC PCB.
+
+## Thu 18 Jun 21:12:52 AEST 2020
+
+I just tried, and the results are very interesting. At no speed with
+this new clock does it load the SP in a stable fashion. I can get a
+few dozen or perhaps hundred runs, but the SP isn't loaded consistently
+and sometimes it's not loaded at all.
+
+But, going back to the SPlo wiring:
+
+![](Figs/fisc_sp_clock.png)
+
+That `~clkbar` signal is the normal clock signal inverted. I have a
+spare DIP 74HCT04 hex inverter here. What if I run the clock through
+five inverters? It will be inverted, but also be delayed compared
+to the normal `~clkbar` signal. That might slow it down enough to
+allow the `~LD` lines on the 74LS469s to be set before the `CLK`
+arrives.
+
+It's worth a shot. If it works, it will confirm that `~LD` must be set
+well before the `CLK` arrives. And, I could "dead bug" this change :-)
