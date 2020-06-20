@@ -3908,3 +3908,112 @@ arrives.
 
 It's worth a shot. If it works, it will confirm that `~LD` must be set
 well before the `CLK` arrives. And, I could "dead bug" this change :-)
+
+## Fri 19 Jun 08:08:21 AEST 2020
+
+I've put a 74HCT04 on the breadboard, connected it to the 3.57MHz clock
+and put five inverters in series. I am getting a 30nS time delay plus
+the clock inversion:
+
+![](Figs/inv_30ns.png)
+
+That's excellent. So now I can try and lift the pin 1s on the two 74LS469s
+on the PCB and connect them to this delayed `~clkbar` signal and see what
+happens.
+
+## Sat 20 Jun 10:40:25 AEST 2020
+
+I've added the new 74HCT04 inverter to the PCB "deadbug" style. Here is what
+it looks like:
+
+![](Figs/deadbug_inverter.jpg)
+
+The blue line is the original `~clkbar` signal which goes to the top-left
+inverter input. This goes through four inverters and comes out on the
+mid-right vertical white/blue line to pin 1 of SPlo: this is the
+delayed `~clkbar` signal. This is also connected to pin 1 of SPhi.
+You can see that I've just bent out the pin 1s of the two 74LS469 chips.
+I also put in some electrical tap for the left-hand 74LS469 pin 1 to stop
+the original `~clkbar` signal accidentally interacting with the delayed
+`~clkbar` signal.
+
+![](Figs/deadbug_delay.png)
+
+Measured with DSview, the four inverters introduce a delay of about
+20nS (325.00 - 305.00 nS between the first two signals). The bottom
+signal is the `~LD` signal dropping on SPhi. You can see that it
+definitely arrives before the new `CLK` signal for the 74LS469.
+
+Now for the results. Using my 555 clock circuit, say around 5kHz,
+it works. The assembly is now:
+
+```
+        mov sp, $FFFF
+        mov $8000, $23; jsr prhex; out '\n'
+        mov $8000, $AB; jsr prhex; out '\n'
+        mov $8000, $9A; jsr prhex; out '\n'
+
+        mov sp, $ABCD
+# Print out the SP as it is now
+        movasphi; mov $8000, a; jsr prhex
+        movasplo; mov $8000, a; jsr prhex; out '\n'
+# Decrement it
+# Decrement it
+# Increment it
+# Increment it
+# Increment it
+# Increment it
+```
+
+and I see:
+
+```
+23
+AB
+9A
+ABCD
+ABCC
+ABCB
+ABCC
+ABCD
+ABCE
+ABCF
+End
+```
+
+I let it repeat 1,100 times with the same result.
+Then I moved up to my 1MHz oscillator which I found. Now I
+see:
+
+```
+23
+AB
+9A
+FFFF
+FFFE
+FFFD
+FFFE
+FFFF
+0000
+00	and crash
+```
+
+which I can't understand at the moment. With the 3.57MHz
+oscillator, I also see:
+
+```
+23
+AB
+9A
+FFFF
+FFFE
+FFFD
+FFFE
+FFFF
+0000
+00	and crash
+```
+
+OK, but we know that the `~LD` signal is arriving before the
+`CLK` signal now. I'm going to have to inspect the data
+bus value to see what is actually being loaded.
