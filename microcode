@@ -447,10 +447,15 @@ START := MEMwrite IRread PCincr
 	     ARwrite MEMwrite Aread		# A = $ADDR,B
 	     uSreset
 
-# Set the stack pointer to an address
-# SPwrite to see its value on the address bus
-47 mov_sp_word: MEMwrite SPloread PCincr
-	MEMwrite SPhiread PCincr
+# Set the stack pointer to an address.
+# The PCincr are on separate microinstructions
+# to prevent the address bus value (and hence
+# the data bus value) changing as SP reads it.
+# The SPwrite to see its value on the address bus.
+47 mov_sp_word: MEMwrite SPloread
+	PCincr
+	MEMwrite SPhiread
+	PCincr
 	SPwrite
 	uSreset SPwrite
 

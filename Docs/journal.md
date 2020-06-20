@@ -3177,7 +3177,7 @@ I got the logic probe yesterday in the mail. Here's a summary. It seems like
 the UART is the thing putting bogus stuff on the data bus. I've checked the
 wiring and it seems identical to CSCvon8.
 
-I was going to try my DSLogic Pro, but I can't work out a way to attach the
+I was going to try my DSLogic Plus, but I can't work out a way to attach the
 fly leads to the pin sockets that I have. The sockets are circular. I have
 some pin headers but they are square and don't fit. And the fly leads have
 pin sockets which fit the pin headers. So I'm stuck.
@@ -3525,8 +3525,8 @@ values with the new `movsp` instruction. At least they are DIPs so I can probe t
 
 ## Sun 14 Jun 15:54:40 AEST 2020
 
-I just spent too long and got frustrated, then realised my problem. I've got the DSLogic
-Plus conected to:
+I just spent too long and got frustrated, then realised my problem. I've
+got the DSLogic Plus conected to:
 
  + D0-3, Q0-3, SktOp0-1, SPloread, Clk, DbRd0-3
 
@@ -4017,3 +4017,91 @@ FFFF
 OK, but we know that the `~LD` signal is arriving before the
 `CLK` signal now. I'm going to have to inspect the data
 bus value to see what is actually being loaded.
+
+## Sat 20 Jun 15:30:28 AEST 2020
+
+I attached my DSLogic Plus to the PCB and recorded the delayed `~clkbar`, the
+SPhi `~LD` line and the bottom 4 bits of the data bus. I put this code into
+the ROM:
+
+```
+	mov sp, $FFFF
+	mov sp, $3300
+	mov sp, $4400
+	mov sp, $5500
+	jmp $0000
+```
+
+I recorded 5mS of activity with the 3.57MHz oscillator, dumped it as a CSV
+file and parsed it with a small Perl script. What I got was:
+
+```
+    SDhi loads 3
+    SDhi loads 4
+    SDhi loads 5
+    SDhi loads f
+```
+
+two hundred times. This is strong evidence that the values are definitely
+being written into SPhi. Now I need to find out if and why they are not
+coming back out again.
+
+## Sat 20 Jun 18:46:08 AEST 2020
+
+My new test code is this:
+
+```
+        mov sp, $0F26; movasphi
+        mov sp, $7389; movasphi
+        mov sp, $A4BC; movasphi
+        mov sp, $D51E; movasphi
+        jmp $0000
+```
+
+and I'm watching the low 4 bits on the data bus when SPhi is copied to the
+A register. I can't explain what's going on. Here are some captures. The
+signals are:
+
+ + clk, ~OE, clkbar (delayed), ~LD
+ + d0, d1, d2, d3
+ + dbwr0, dbwr1, dbwr2
+
+The first is at a slow clock speed:
+
+![](Figs/slow_clock_capture.png)
+
+At point 1, `~LD` goes low followed by `clkbar`, and $3 (0011) is loaded
+into SPhi. At point 2, `~OE` goes low when `SPwrite` is selected which
+writes the value onto the address bus (which I should check).
+
+Then at point 3, `abwr` goes to 1. `SPhiwrite` is already on (not shown)
+and `ADhiwrite` goes low; this turns on the ADlo buffer. The effect is to
+write $3 on the data bus. All fine.
+
+Now let's look at a capture with the 1Mhz clock speed:
+
+![](Figs/1MHz_capture.png)
+
+At point (as above), we should be loading the SPhi register. This time the
+value is $4 (0100). At point 2, `~OE` goes low as above. At point 3,
+`~OE` goes low again and the value should be on the data bus. However,
+this time we get $F on the data bus.
+
+I noticed at point 1 that the data bus value changes a bit after `clkbar`
+goes high. This is because we increment the PC mid-cycle. This increments
+the values on the address bus, changes the instruction ROM output and thus
+changes the data bus value to $2 (0010). I was worried that this might
+be causing the SPhi register to mis-read the data bus value. So I changed
+the microcode to leave the PC untouched in this microinstruction, and 
+add the `PCincr` as a new microinstruction following this one.
+
+This kept the data bus value constant for thw whole of the `~LD` clock
+cycle, but at 1MHz it still didn't make a change.
+
+So I'm a bit stumped.
+
+The next thing I can try to do is to monitor the address bus value,
+especially at point 2 when we write the SP value on to the address bus.
+If the value is OK there, then the 74LS469 must be working fine and the
+problem is elsewhere, e.g. the buffers allowing the address bus value on
+to the data bus.
