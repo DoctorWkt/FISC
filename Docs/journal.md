@@ -4287,7 +4287,7 @@ of a stack pointer. Damnit!
 ## Thu 25 Jun 22:25:20 AEST 2020
 
 If we can't set the stack pointer's value manually, but we can increment and
-decrement it, then at least I can write code to increment it to a known value:
+decrement it, then at least I can write code to decrement it to a known value:
 
 ```
 # Force the Stack Pointer to have a specific value, $FFFF
@@ -4301,7 +4301,7 @@ L2:	movasphi		# Get SPhi
 	jeq a, b, L3		# Break out of outer loop if $FF
 	dec sp			# Nop, so decrement the SP
 	jmp L1
-L1: ...
+L3: ...
 ```
 
 This actually works! So, I went all-in and compiled `himinsky.cl` into assembly
