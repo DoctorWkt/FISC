@@ -544,3 +544,19 @@ START := MEMwrite IRread PCincr
 # Get PChi into A
 66 movapchi: PCwrite ADhiwrite Aread
 	uSreset
+
+# Copy A into SPhi. I try several times
+# to do this, and in different ways
+67 movsphia: Awrite SPhiread
+	SPwrite
+	Awrite SPhiread
+	SPwrite
+	Awrite SPhiread
+	SPwrite
+	Awrite SPhiread
+	SPwrite
+	Awrite SPhiread SPwrite
+	Awrite SPhiread SPwrite
+	Awrite SPhiread SPwrite
+	Awrite SPhiread SPwrite
+	uSreset

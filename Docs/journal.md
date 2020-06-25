@@ -4065,6 +4065,7 @@ signals are:
  + clk, ~OE, clkbar (delayed), ~LD
  + d0, d1, d2, d3
  + dbwr0, dbwr1, dbwr2
+ + a0, a1, a2, a3
 
 The first is at a slow clock speed:
 
@@ -4105,3 +4106,208 @@ especially at point 2 when we write the SP value on to the address bus.
 If the value is OK there, then the 74LS469 must be working fine and the
 problem is elsewhere, e.g. the buffers allowing the address bus value on
 to the data bus.
+
+## Sun 21 Jun 20:03:03 AEST 2020
+
+I monitored the address bus and I'm still not seeing the correct value
+on the address bus when `~OE` is low. I've also written an instruction
+to load SPhi directly from A across the data bus. This bypasses the
+address bus in case there is something weird on the address bus. Here
+is the microcode:
+
+```
+# Copy A into SPhi. I try several times
+# to do this, and in different ways
+67 movsphia: Awrite SPhiread
+        SPwrite
+        Awrite SPhiread
+        SPwrite
+        Awrite SPhiread
+        SPwrite
+        Awrite SPhiread
+        SPwrite
+        Awrite SPhiread SPwrite
+        Awrite SPhiread SPwrite
+        Awrite SPhiread SPwrite
+        Awrite SPhiread SPwrite
+        uSreset
+```
+
+I output the SPvalue on the address bus with `SPwrite` which
+drops `~OE` low. So I try to write the A value four times
+and then inspect it four times.
+
+After that, keep `~OE` low for all four times that I try to
+write A to SPhi. At 1MHz, the A value either never loads,
+or it never comes back out on the address bus.
+
+But at low frequencies (20kHz with my 555 circuit), this works.
+Here's the code I'm using now which copies sixteen A values into
+SPhi, gets them back and prints them out:
+
+```
+        mov a, $30; movsphia; movasphi; out a
+        mov a, $31; movsphia; movasphi; out a
+        mov a, $32; movsphia; movasphi; out a
+        mov a, $33; movsphia; movasphi; out a
+        mov a, $34; movsphia; movasphi; out a
+        mov a, $35; movsphia; movasphi; out a
+        mov a, $36; movsphia; movasphi; out a
+        mov a, $37; movsphia; movasphi; out a
+        mov a, $38; movsphia; movasphi; out a
+        mov a, $39; movsphia; movasphi; out a
+        mov a, $4A; movsphia; movasphi; out a
+        mov a, $4B; movsphia; movasphi; out a
+        mov a, $4C; movsphia; movasphi; out a
+        mov a, $4D; movsphia; movasphi; out a
+        mov a, $4E; movsphia; movasphi; out a
+        mov a, $4F; movsphia; movasphi; out a
+        out '\n'
+        jmp $0000
+```
+
+and at 20kHz repeatedly prints out:
+
+```
+0123456789JKLMNO
+```
+
+But garbage at 1MHz. I've captured both runs with
+DSview as files
+`write_a_to_sp_1MHz.dsl` and `write_a_to_sp_20kHz.dsl`
+with these lines:
+
+ + clk, ~OE, clkbar (delayed), ~LD
+ + d0, d1, d2, d3
+ + dbwr0, dbwr1, dbwr2
+ + a0, a1, a2, a3
+
+So I can inspect and compare them.
+
+## Tue 23 Jun 21:19:42 AEST 2020
+
+I'm taking a step back. With my "cascaded 74LS469 clock" that has sixteen
+clock frequencies, I can't get the SPhi register to load at all! But it
+does load perfectly well with my 555 timer circuit. So, could it be the
+voltage amplitude or shape of the clock signal that is causing problems?
+
+I don't have very good analog tools here, so below is the best that I can do.
+I'm using my Bitscope Micro analog scope to measure things. Oscilloscope:
+20MHz bandwidth, normal, smooth, paused, wideband. CH A: 9.2V, 0V REF, 
+2V/div. Timing: Post, Zoom, Auto Focus, 1uS/div, Repeat, Trace. Trigger:
+High Speed, CH A, Rise, 127mV.
+
+
+
+ + 555 oscillator: up to 25kHz, maybe a 75% duty cycle, 3.48V range. SPhi
+   always loads.
+ + 1MHz oscillator: measures at 1MHz, looks reasonably like a square wave,
+4.82V range. SPhi doesn't load at all.
+ + 3.57MHz oscillator: the scope's bandwidth is too low to see a square
+   wave, but the frequency is about 3.33MHz and the apparent voltage
+   range is 4.86V. SPhi doesn't load at all.
+ + Cascasded 74LS469 clock: My multimeter shows only 4V between Vcc and
+   ground on the 74LS469 pins. The output is a good square wave, but the
+   voltage range is only 2.2V! This probably explains why I'm not seeing
+   anything when I use this as the clock source.
+
+OK, so I am now trying the waveform generator on the Bitscope Micro itself.
+0V to 3.3V. And ... it's working perfectly up to 250kHz. Now I wish I had
+a signal generator that went up to 5MHz.
+
+## Wed 24 Jun 11:28:18 AEST 2020
+
+I don't have a 5MHz signal generator and the cascasded 74LS469s don't work.
+But I do have a 74HC161 4-bit counter. Just wired it up on a breadboard
+and checked it with my Bitscope Micro. Voltage is good: 4.5V or better.
+The frequencies measured are close enough to what they should be with
+the 3.57MHz oscillator:
+
+```
+223.71k
+446.43k
+892.86k
+  1.79M
+```
+
+So that's another four clock frequencies I can try.
+
+## Thu 25 Jun 12:54:58 AEST 2020
+
+None of these worked. So it seems to me that some characteristic of
+the clock signal is causing problems. I've now turned my attention
+to the `~LD` signal itself.
+
+I'm using DSview, two channels (`CK` and `~LD`), 400MHz. I'm tweaking the
+threshold to try and see what the levels are on the `~LD` signal
+and also on the `CK` signal.
+
+With the working 555 clock signal, I can raise the sample threshold
+up to 3.6V and the `~LD` waveform looks OK. Above that, I see glitches.
+I can lower the threshold all the way down to 0.2V and it's still OK.  
+
+Now the working 250kHz Bitscope Micro clock signal.
+Low threshold for `~LD` is now 0.3V, high threshold is 3.7V.
+
+Now let's try the failing 1MHz oscillator. Remember: the rest of the CPU
+is still working, but the `~LD` is failing to work.
+Low threshold for `~LD` is now 0.8V, high threshold is 4.1V.
+
+Now let's try the failing 3.57MHz oscillator.
+Low threshold for `~LD` is now 0.7V, high threshold is 4.8V.
+
+So, let's change tack and measure the clock signal itself.
+
+555 clock: 0.2V to 3.1V.
+Bitscope Micro: 1.3V to 2.7V.
+1MHz oscillator: 0.1V to 4.9V.
+3.57MHz oscillator: 0.1V to 4.9V.
+
+Summary table:
+
+Source     | Clk low   | Clk high  | `~LD` low | `~LD` high
+           | threshold | threshold | threshold | threshold
+-----------|-----------|-----------|-----------|-----------
+  555      |   0.2V    |   3.1V    |    0.2V   |    3.6V 
+Bitscope   |   1.3V    |   2.7V    |    0.3V   |    3.7V
+1MHz osc   |   0.1V    |   4.9V    |    0.8V   |    4.1V
+3.57MHz osc|   0.1V    |   4.9V    |    0.7V   |    4.8V
+
+## Thu 25 Jun 16:21:19 AEST 2020
+
+I went crazy and tried a 1K pulldown resistor from `~LD` to ground,
+didn't make the 1MHz clock work. Sigh. An even smaller pulldown
+resistor also doesn't make any difference.
+
+So, I think for FISC, I'm going to have to give up on the idea
+of a stack pointer. Damnit!
+
+## Thu 25 Jun 22:25:20 AEST 2020
+
+If we can't set the stack pointer's value manually, but we can increment and
+decrement it, then at least I can write code to increment it to a known value:
+
+```
+# Force the Stack Pointer to have a specific value, $FFFF
+
+	mov b, $FF		# We compare against B
+L1:	movasplo		# Get SPlo
+	jeq a, b, L2		# Break out of inner loop if $FF
+	dec sp			# Nop, so decrement the SP
+	jmp L1
+L2:	movasphi		# Get SPhi
+	jeq a, b, L3		# Break out of outer loop if $FF
+	dec sp			# Nop, so decrement the SP
+	jmp L1
+L1: ...
+```
+
+This actually works! So, I went all-in and compiled `himinsky.cl` into assembly
+code, and appended the assembly code to the bottom (so that the function calls
+have a stack to work on). Guess what?! ... It works!! And it works at 3.57MHz
+as well :-)
+
+Now I have a workaround for the damn stack pointer issue. I've just plugged the
+USB cable into the UART three times in a row. The reset circuit brings the
+system up a few hundred milliseconds later, and the damn thing quite happily
+runs the Minsky sine wave each time. What a relief!
