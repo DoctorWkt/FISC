@@ -4265,13 +4265,15 @@ Bitscope Micro: 1.3V to 2.7V.
 
 Summary table:
 
-Source     | Clk low   | Clk high  | `~LD` low | `~LD` high
+```
+Source     | Clk low   | Clk high  |  ~LD low  | ~LD high
            | threshold | threshold | threshold | threshold
 -----------|-----------|-----------|-----------|-----------
   555      |   0.2V    |   3.1V    |    0.2V   |    3.6V 
 Bitscope   |   1.3V    |   2.7V    |    0.3V   |    3.7V
-1MHz osc   |   0.1V    |   4.9V    |    0.8V   |    4.1V
-3.57MHz osc|   0.1V    |   4.9V    |    0.7V   |    4.8V
+1MHz Osc   |   0.1V    |   4.9V    |    0.8V   |    4.1V
+3.57MHz Osc|   0.1V    |   4.9V    |    0.7V   |    4.8V
+```
 
 ## Thu 25 Jun 16:21:19 AEST 2020
 
