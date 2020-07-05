@@ -4313,3 +4313,21 @@ Now I have a workaround for the damn stack pointer issue. I've just plugged the
 USB cable into the UART three times in a row. The reset circuit brings the
 system up a few hundred milliseconds later, and the damn thing quite happily
 runs the Minsky sine wave each time. What a relief!
+
+## Sat 27 Jun 21:11:07 AEST 2020
+
+I was reading the datasheet for the 74LS469 again and this time I noticed in
+one of the tables that the minimum setup time is 50nS. This is probably the
+root cause of my problem. The `~LD` line isn't set 50nS before the `CLK`
+arrives. Well, I can't change the design now that I've built the thing, but
+I've already fixed the FISC2 design to set `~LD` at the start of the clock
+cycle. With the Decode ROM delay, that still should be at least 150nS before
+the clock drops mid-cycle. I'll be doing some breadboard testing and I'll
+find out then.
+
+## Sun  5 Jul 15:38:09 AEST 2020
+
+I think I've taken the FISC CPU as far as I can go. It's been a very useful
+dry-run for the ![FISC2](https://github.com/DoctorWkt/2FISC) CPU. So I've
+stopped development of FISC now, and you should follow the 2FISC link for
+further developments.

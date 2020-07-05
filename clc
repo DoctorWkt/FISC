@@ -162,8 +162,23 @@ die("output file name same as input file $outfile\n")
 
 open( $OUT,   ">", $outfile ) || die("Cannot write $outfile: $!\n");
 open( my $IN, "<", $ARGV[0] ) || die("Cannot open $ARGV[0]: $!\n");
-print( $OUT "\tjsr main\n" );    # Initial function call
-print( $OUT "end:\tjmp \$FFFF\n" );
+
+# Generate the assembly preamble
+print $OUT <<'EOF';
+        mov b, $FF
+S1:     movasplo
+        jeq a, b, S2
+        dec sp
+        jmp S1
+S2:     movasphi
+        jeq a, b, S3
+        dec sp
+        jmp S1
+S3:	jsr main
+_end:	jmp _end
+EOF
+
+# Loop over the lines in the input file
 while (<$IN>) {
     chomp;
 

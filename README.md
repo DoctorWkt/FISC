@@ -1,5 +1,9 @@
 # FISC: An 8-bit TTL CPU with a Stack Register
 
+**Please note**: The FISC design has some major flaws. Rather than
+fix them, I've incorporated the fixes into the next version of the
+design: ![FISC2](https://github.com/DoctorWkt/2FISC).
+
 FISC is an 8-bit microseqenced CPU wth a 64K address space built from
 discrete TTL-level components. It provides:
 

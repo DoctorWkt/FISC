@@ -3,11 +3,11 @@
 	mov b, $FF		# We compare against B
 L1:	movasplo		# Get SPlo
 	jeq a, b, L2		# Break out of inner loop if $FF
-	dec sp			# Nop, so decrement the SP
+	dec sp			# Nope, so decrement the SP
 	jmp L1
 L2:	movasphi		# Get SPhi
 	jeq a, b, L3		# Break out of outer loop if $FF
-	dec sp			# Nop, so decrement the SP
+	dec sp			# Nope, so decrement the SP
 	jmp L1
 L3:	movasphi; mov $8000, a; jsr prhex
 	movasplo; mov $8000, a; jsr prhex; out '\n'
